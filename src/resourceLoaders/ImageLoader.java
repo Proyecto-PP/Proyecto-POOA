@@ -25,13 +25,15 @@ public final class ImageLoader {
     public static final int ROAD_TILE = 1;
     public static final int DIRT_TILE = 2;
     public static final int BRICK_TILE = 3;
+    public static final int BLOCK_TILE = 4;
 
     static {
         TILES = new Image[5];
-        TILES[GRASS_TILE] = new Image("file:resources//sprites//tiles//grass.png");
-        TILES[ROAD_TILE] = new Image("file:resources//sprites//tiles//road.png");
-        TILES[DIRT_TILE] = new Image("file:resources//sprites//tiles//dirt.png");
-        TILES[BRICK_TILE] = new Image("file:resources//sprites//tiles//brick.png");
+        TILES[GRASS_TILE] = new Image("file:resources//sprites//tiles//grass.png", 50, 50, true, false);
+        TILES[ROAD_TILE] = new Image("file:resources//sprites//tiles//road.png", 50, 50, true, false);
+        TILES[DIRT_TILE] = new Image("file:resources//sprites//tiles//dirt.png", 50, 50, true, false);
+        TILES[BRICK_TILE] = new Image("file:resources//sprites//tiles//brick.png", 50, 50, true, false);
+        TILES[BLOCK_TILE] = new Image("file:resources//sprites//tiles//tile.png", 50, 50, true, false);
 
         double duracion=0.2;
 

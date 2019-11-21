@@ -1,42 +1,48 @@
 package display;
 
+import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 import resourceLoaders.ImageLoader;
 
-import java.awt.*;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
 public class Background {
-    public static int[][] GAME_MAP={{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //0
-                                    {0, 2, 0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0}, //1
-                                    {0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 2, 0, 1}, //2
-                                    {3, 0, 3, 1, 0, 3, 3, 0, 3, 1, 0, 3, 0, 1, 0, 0, 3, 0, 0, 1, 0}, //3
-                                    {3, 3, 3, 0, 3, 0, 3, 0, 2, 0, 2, 0, 3, 2, 3, 3, 0, 3, 2, 3, 3}, //4
-                                    {3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 2, 0, 3, 0, 3}, //5
-                                    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0}, //6
-                                    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //7
-                                    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //8
-                                    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //9
-                                    {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //10
-                                    {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};//11
-    BufferedImage backgroundMap;
+                                    // 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,15,16,17,18,19,20
+    private static int[][] GAME_MAP ={{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},//0
+                                      {0, 2, 0, 2, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0}, //1
+                                      {0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 2, 0, 1}, //2
+                                      {3, 0, 3, 1, 0, 3, 3, 0, 3, 1, 0, 3, 0, 1, 0, 0, 3, 0, 0, 1, 0}, //3
+                                      {3, 3, 3, 0, 3, 0, 3, 0, 2, 0, 2, 0, 3, 2, 3, 3, 0, 3, 2, 3, 3}, //4
+                                      {3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3, 2, 0, 3, 0, 3}, //5
+                                      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0}, //6
+                                      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //7
+                                      {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //8
+                                      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //9
+                                      {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, //10
+                                      {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};//11
+
+    public static Image GAME_BG;
+    public static int MAP_WIDTH;
+    public static int MAP_HEIGHT;
+
     public Background(){
-        backgroundMap = buildMap();
+        GAME_BG = createBackground();
+        MAP_WIDTH = (int) (GAME_MAP[0].length*ImageLoader.TILES[0].getWidth());
+        MAP_HEIGHT = (int) (GAME_MAP.length*ImageLoader.TILES[0].getHeight());
     }
 
-    private BufferedImage buildMap(){
-        int screenWidth = 1024;
-        int screenHeight = 600;
+    private Image createBackground(){
+        BufferedImage newImage = new BufferedImage(1024,600, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = newImage.createGraphics();
+        int tileWidth = (int) ImageLoader.TILES[0].getWidth();
+        int tileHeight = (int) ImageLoader.TILES[0].getHeight();
 
-        BufferedImage bg = new BufferedImage(screenWidth,screenHeight, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g = bg.createGraphics();
-    /*
-        for(int i = 0; i<GAME_MAP.length; i++){
-            for(int j = 0; j<GAME_MAP[0].length; j++)
-              //  g.drawImage(ImageLoader.TILES[GAME_MAP[i][j]],  j*ImageLoader.TILES[0].getWidth(), 0);
+        for(int i=0; i< GAME_MAP.length; i++){
+            for(int j=0; j< GAME_MAP[0].length; j++){
+                g.drawImage(SwingFXUtils.fromFXImage(ImageLoader.TILES[GAME_MAP[i][j]],null), null,j*tileWidth, i*tileHeight);
+            }
         }
-        g.dispose();
-*/
-        return bg;
+        return SwingFXUtils.toFXImage(newImage,null);
     }
 }

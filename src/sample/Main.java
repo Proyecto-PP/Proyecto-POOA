@@ -71,7 +71,7 @@ public class Main extends Application {
         arrayEntidad.add(jugador);
         arrayEntidad.add(camion);
         arrayEntidad.add(boteAzul);
-
+        bg = new Background();
 
     }
 
@@ -198,13 +198,13 @@ public class Main extends Application {
     {   gc.clearRect(0,0,1024,600);
         if(stateGame==StateGame.playing)
         {
-
+           paintBackground(gc);
            arrayEntidad.forEach(objeto->
            {
                if(objeto.getName()=="jugador") paintPlayer(gc,t);
                else if(objeto.getName()=="basuraPlastico") gc.drawImage(ImageLoader.spritePlastico,objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
-               else if (objeto.getName()=="camion") gc.drawImage(ImageLoader.spriteCamion, objeto.getX(), objeto.getY(), objeto.getWidth(), objeto.getHeight());
-               else if(objeto.getName()=="boteAzul") gc.drawImage(ImageLoader.spriteBoteAzul,objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
+               else if (objeto.getName()=="camion") gc.drawImage(ImageLoader.spriteCamion, 100, 200, objeto.getWidth(), objeto.getHeight());
+               else if(objeto.getName()=="boteAzul") gc.drawImage(ImageLoader.spriteBoteAzul,50,250,objeto.getWidth(),objeto.getHeight());
            });
 
         }
@@ -234,6 +234,11 @@ public class Main extends Application {
         {
 
         }
+    }
+
+    private void paintBackground(GraphicsContext gc){
+        gc.drawImage(Background.GAME_BG, -(camion.getX()-100), camion.getY()-200, 1024, 600);
+        gc.drawImage(Background.GAME_BG, -(camion.getX()-Background.MAP_WIDTH), camion.getY()-200, 1024, 600);
     }
 
         public void paintPlayer(GraphicsContext gc,double t)
