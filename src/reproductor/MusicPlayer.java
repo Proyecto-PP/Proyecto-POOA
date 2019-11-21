@@ -10,22 +10,24 @@ public class MusicPlayer {
 
     private MediaPlayer player;
     private Media song;
-    private String pathToFile;
 
     public MusicPlayer() {
 
     }
 
-    public MusicPlayer(String file) {
-        pathToFile = "resources/";
-        song = new Media(new File( pathToFile + file).toURI().toString());
+    public MusicPlayer(String filePath) {
+        if(filePath.startsWith("file:")) {
+            //getMedia crea una File, la cual no utiliza el inicio de "file:" pare encontrar archivos.
+            song = getMedia(filePath.substring(5));
+        } else {
+            song = getMedia(filePath);
+        }
+
         player = new MediaPlayer(song);
     }
 
-    public MusicPlayer(String pathToFile, String file) {
-
-        this.pathToFile = pathToFile;
-        song = new Media(new File(pathToFile + file).toURI().toString());
+    public MusicPlayer(Media file) {
+        song = file;
         player = new MediaPlayer(song);
     }
 
@@ -56,7 +58,17 @@ public class MusicPlayer {
         return -1;
     }
 
-    public int fadeOut() {
+    public int fadeInPlay(double volume) {
+        if(!isSongPLaying()) {
+            fadeToVolume(volume);
+            play();
+            return 0;
+        }
+
+        return -1;
+    }
+
+    public int fadeOutStop() {
         if(isSongPLaying()) {
 
             new Thread(() -> new AnimationTimer() {
@@ -85,12 +97,21 @@ public class MusicPlayer {
         return false;
     }
 
-    public int setSong(String file) {
+    public int setSong(String filePath) {
         if(isSongPLaying()) {
             player.stop();
         }
 
-        song = new Media(new File(pathToFile + file).toURI().toString());
+        try {
+            if(filePath.startsWith("file:")) {
+                //getMedia crea una File, la cual no utiliza el inicio de "file:" pare encontrar archivos.
+                song = getMedia(filePath.substring(5));
+            } else {
+                song = getMedia(filePath);
+            }
+        } catch (NullPointerException e) {
+            song = null;
+        }
 
         if(song != null) {
             player = new MediaPlayer(song);
@@ -100,7 +121,31 @@ public class MusicPlayer {
         return -1;
     }
 
-    public int setSongAndPlay(String file) {
+    public int setSongAndPlay(String filePath) {
+        if(setSong(filePath) != -1) {
+            player.play();
+            return 0;
+        }
+
+        return -1;
+    }
+
+    public int setSong(Media file) {
+        if(isSongPLaying()) {
+            player.stop();
+        }
+
+        song = file;
+
+        if(song != null) {
+            player = new MediaPlayer(song);
+            return 0;
+        }
+
+        return -1;
+    }
+
+    public int setSongAndPlay(Media file) {
         if(setSong(file) != -1) {
             player.play();
             return 0;
@@ -157,16 +202,6 @@ public class MusicPlayer {
         return -1;
     }
 
-
-
-    public String getPathToFile() {
-        return pathToFile;
-    }
-
-    public void setPathToFile(String pathToFile) {
-        this.pathToFile = pathToFile;
-    }
-
     public int createPlayer() {
         if(player == null && song != null) {
             player = new MediaPlayer(song);
@@ -176,15 +211,8 @@ public class MusicPlayer {
         return -1;
     }
 
-    public int createPlayer(String file) {
-        if(player == null) {
-
-            player = new MediaPlayer(song);
-            return 0;
-        }
-
-        return -1;
+    private Media getMedia(String filePath) {
+        return new Media(new File(filePath).toURI().toString());
     }
-
 
 }
