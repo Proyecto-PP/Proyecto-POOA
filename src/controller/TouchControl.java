@@ -17,7 +17,7 @@ public final class TouchControl {
 
 
     static {
-        botonA = new Button(904, 430, 100, 100, ImageLoader.botonA);
+        botonA = new Button(904, 430, ImageLoader.botonA);
         botonA.setOpacity(0.65);
         botonA.setOnTouchPressed(event -> {
             botonA.setOpacity(1.0);
@@ -41,7 +41,7 @@ public final class TouchControl {
         });
 
 
-        botonB = new Button(784, 480, 100, 100, ImageLoader.botonB);
+        botonB = new Button(784, 480, ImageLoader.botonB);
         botonB.setOpacity(0.65);
         botonB.setOnTouchPressed(event -> {
             botonB.setOpacity(1.0);
@@ -67,7 +67,7 @@ public final class TouchControl {
 
 
 
-        dpad = new Button(20, 430, 150, 150, ImageLoader.dpad);
+        dpad = new Button(20, 430, ImageLoader.dpad);
         dpad.setOpacity(0.65);
         EventHandler te = event -> {
             double xTouchPoint = ((TouchEvent) event).getTouchPoint().getX();

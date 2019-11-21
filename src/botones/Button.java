@@ -15,23 +15,16 @@ public class Button extends ImageView {
             img = new Image("file:" + imagePath, width, height, true, false);
         }
 
-        setSmooth(false);
         setImage(img);
 
-        setFitHeight(height);
-        setFitWidth(width);
         setX(x);
         setY(y);
     }
 
-    public Button(double x, double y, double width, double height, Image imagen) {
+    public Button(double x, double y, Image imagen) {
         img = imagen;
-
         setImage(img);
-        setSmooth(false);
 
-        setFitHeight(height);
-        setFitWidth(width);
         setX(x);
         setY(y);
     }

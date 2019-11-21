@@ -59,7 +59,7 @@ public class MusicPlayer {
     }
 
     public int fadeInPlay(double volume) {
-        if(!isSongPLaying()) {
+        if(!isSongPLaying() && player != null) {
             fadeToVolume(volume);
             play();
             return 0;

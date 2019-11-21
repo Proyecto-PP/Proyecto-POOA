@@ -4,9 +4,13 @@ import display.AnimatedImage;
 import javafx.scene.image.Image;
 
 public final class ImageLoader {
-    public final static Image botonA = new Image("file:resources/sprites/controller/botonA.png", 20, 20, true, false);
-    public final static Image botonB = new Image("file:resources/sprites/controller/botonB.png", 20, 20, true, false);
-    public final static Image dpad = new Image("file:resources/sprites/controller/dpad.png", 30, 30, true, false);
+
+    /*Las imagenes que utilicen ImageView para mostrarse DEBEN ser cargadas con el tamaño que deseas por default.
+      Si usas imageview.setFitWidth/setFitHeight se hace un smooth automatico e irreversible*/
+
+    public final static Image botonA = new Image("file:resources/sprites/controller/botonA.png", 100, 100, true, false);
+    public final static Image botonB = new Image("file:resources/sprites/controller/botonB.png", 100, 100, true, false);
+    public final static Image dpad = new Image("file:resources/sprites/controller/dpad.png", 150, 150, true, false);
     public final static Image paradoAbajo = new Image("file:resources//sprites//SpritePlayer//persona1.png");
     public final static Image paradoIzquierda = new Image("file:resources//sprites//SpritePlayer//persona5.png");
     public final static Image paradoDerecho = new Image("file:resources//sprites//SpritePlayer//persona9.png");
