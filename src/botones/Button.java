@@ -7,6 +7,8 @@ public class Button extends ImageView {
 
     private Image img;
     private String name;
+    private double width;
+    private double height;
 
     public Button(double x, double y, double width, double height, String imagePath) {
         if(imagePath.startsWith("file:")) {
@@ -17,13 +19,19 @@ public class Button extends ImageView {
 
         setImage(img);
 
+        this.width = width;
+        this.height = height;
+
         setX(x);
         setY(y);
     }
 
-    public Button(double x, double y, Image imagen) {
+    public Button(double x, double y, double width, double height, Image imagen) {
         img = imagen;
         setImage(img);
+
+        this.width = width;
+        this.height = height;
 
         setX(x);
         setY(y);
@@ -49,4 +57,19 @@ public class Button extends ImageView {
         });
     }
 
+    public double getWidth() {
+        return width;
+    }
+
+    public void setWidth(double width) {
+        this.width = width;
+    }
+
+    public double getHeight() {
+        return height;
+    }
+
+    public void setHeight(double height) {
+        this.height = height;
+    }
 }

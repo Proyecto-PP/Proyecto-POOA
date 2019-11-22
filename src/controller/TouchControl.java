@@ -17,7 +17,7 @@ public final class TouchControl {
 
 
     static {
-        botonA = new Button(904, 430, ImageLoader.botonA);
+        botonA = new Button(904, 430, ImageLoader.botonA.getWidth(), ImageLoader.botonA.getHeight(), ImageLoader.botonA);
         botonA.setOpacity(0.65);
         botonA.setOnTouchPressed(event -> {
             botonA.setOpacity(1.0);
@@ -41,7 +41,7 @@ public final class TouchControl {
         });
 
 
-        botonB = new Button(784, 480, ImageLoader.botonB);
+        botonB = new Button(784, 480, ImageLoader.botonB.getWidth(), ImageLoader.botonB.getHeight(), ImageLoader.botonB);
         botonB.setOpacity(0.65);
         botonB.setOnTouchPressed(event -> {
             botonB.setOpacity(1.0);
@@ -67,7 +67,7 @@ public final class TouchControl {
 
 
 
-        dpad = new Button(20, 430, ImageLoader.dpad);
+        dpad = new Button(20, 430, ImageLoader.dpad.getWidth(), ImageLoader.dpad.getHeight(), ImageLoader.dpad);
         dpad.setOpacity(0.65);
         EventHandler te = event -> {
             double xTouchPoint = ((TouchEvent) event).getTouchPoint().getX();
@@ -75,21 +75,21 @@ public final class TouchControl {
 
             dpad.setOpacity(1.0);
 
-            if (xTouchPoint >= dpad.getX() && xTouchPoint <= dpad.getX() + dpad.getFitWidth() / 3) {
+            if (xTouchPoint >= dpad.getX() && xTouchPoint <= dpad.getX() + dpad.getWidth() / 3) {
 
-                if (yTouchPoint >= dpad.getY() && yTouchPoint <= dpad.getY() + dpad.getFitHeight() / 3) {
+                if (yTouchPoint >= dpad.getY() && yTouchPoint <= dpad.getY() + dpad.getHeight() / 3) {
                     //Izquierda arriba
                     Main.setDx(-1.5);
                     Main.setDy(-1);
                     Main.getJugador().setState(StatePlayer.arriba);
                     System.out.println("Izquierda arriba");
-                } else if (yTouchPoint >= dpad.getY() + dpad.getFitHeight() / 3 && yTouchPoint <= dpad.getY() + 2 * dpad.getFitHeight() / 3) {
+                } else if (yTouchPoint >= dpad.getY() + dpad.getHeight() / 3 && yTouchPoint <= dpad.getY() + 2 * dpad.getHeight() / 3) {
                     //Izquierda
                     Main.setDx(-2);
                     Main.setDy(0);
                     Main.getJugador().setState(StatePlayer.izquierda);
                     System.out.println("Izquierda");
-                } else if (yTouchPoint >= dpad.getY() + 2 * dpad.getFitHeight() / 3 && yTouchPoint <= dpad.getY() + dpad.getFitHeight()) {
+                } else if (yTouchPoint >= dpad.getY() + 2 * dpad.getHeight() / 3 && yTouchPoint <= dpad.getY() + dpad.getHeight()) {
                     //Izquierda abajo
                     Main.setDx(-1.5);
                     Main.setDy(1);
@@ -97,21 +97,21 @@ public final class TouchControl {
                     System.out.println("Izquierda abajo");
                 }
 
-            } else if (xTouchPoint >= dpad.getX() + 2 * dpad.getFitWidth() / 3 && xTouchPoint <= dpad.getX() + dpad.getFitWidth()) {
+            } else if (xTouchPoint >= dpad.getX() + 2 * dpad.getWidth() / 3 && xTouchPoint <= dpad.getX() + dpad.getWidth()) {
 
-                if (yTouchPoint >= dpad.getY() && yTouchPoint <= dpad.getY() + dpad.getFitHeight() / 3) {
+                if (yTouchPoint >= dpad.getY() && yTouchPoint <= dpad.getY() + dpad.getHeight() / 3) {
                     //Derecha arriba
                     Main.setDx(1.5);
                     Main.setDy(-1);
                     Main.getJugador().setState(StatePlayer.arriba);
                     System.out.println("Derecha arriba");
-                } else if (yTouchPoint >= dpad.getY() + dpad.getFitHeight() / 3 && yTouchPoint <= dpad.getY() + 2 * dpad.getFitHeight() / 3) {
+                } else if (yTouchPoint >= dpad.getY() + dpad.getHeight() / 3 && yTouchPoint <= dpad.getY() + 2 * dpad.getHeight() / 3) {
                     //Derecha
                     Main.setDx(2);
                     Main.setDy(0);
                     Main.getJugador().setState(StatePlayer.derecha);
                     System.out.println("Derecha");
-                } else if (yTouchPoint >= dpad.getY() + 2 * dpad.getFitHeight() / 3 && yTouchPoint <= dpad.getY() + dpad.getFitHeight()) {
+                } else if (yTouchPoint >= dpad.getY() + 2 * dpad.getHeight() / 3 && yTouchPoint <= dpad.getY() + dpad.getHeight()) {
                     //Derecha abajo
                     Main.setDx(1.5);
                     Main.setDy(1);
@@ -119,17 +119,17 @@ public final class TouchControl {
                     System.out.println("Derecha abajo");
                 }
 
-            } else if (xTouchPoint >= dpad.getX() + dpad.getFitWidth() / 3 && xTouchPoint <= dpad.getX() + 2 * dpad.getFitWidth() / 3) {
+            } else if (xTouchPoint >= dpad.getX() + dpad.getWidth() / 3 && xTouchPoint <= dpad.getX() + 2 * dpad.getWidth() / 3) {
 
-                if (yTouchPoint >= dpad.getY() && yTouchPoint <= dpad.getY() + dpad.getFitHeight() / 3) {
+                if (yTouchPoint >= dpad.getY() && yTouchPoint <= dpad.getY() + dpad.getHeight() / 3) {
                     //Arriba
                     Main.setDy(-2);
                     Main.setDx(0);
                     Main.getJugador().setState(StatePlayer.arriba);
                     System.out.println("Arriba");
-                } else if (yTouchPoint >= dpad.getY() + dpad.getFitHeight() / 3 && yTouchPoint <= dpad.getY() + 2 * dpad.getFitHeight() / 3) {
+                } else if (yTouchPoint >= dpad.getY() + dpad.getHeight() / 3 && yTouchPoint <= dpad.getY() + 2 * dpad.getHeight() / 3) {
                     //Centro
-                } else if (yTouchPoint >= dpad.getY() + 2 * dpad.getFitHeight() / 3 && yTouchPoint <= dpad.getY() + dpad.getFitHeight()) {
+                } else if (yTouchPoint >= dpad.getY() + 2 * dpad.getHeight() / 3 && yTouchPoint <= dpad.getY() + dpad.getHeight()) {
                     //Abajo
                     Main.setDy(2);
                     Main.setDx(0);
