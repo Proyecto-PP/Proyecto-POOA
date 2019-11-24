@@ -1,6 +1,7 @@
 package sample;
 
 import botones.Button;
+import controller.KeyboardControl;
 import controller.TouchControl;
 
 import display.Background;
@@ -23,6 +24,7 @@ import people.StatePlayer;
 import reproductor.MusicPlayer;
 import resourceLoaders.AudioLoader;
 import resourceLoaders.ImageLoader;
+import teclado.TecladoFX;
 
 import java.util.*;
 
@@ -35,6 +37,7 @@ public class Main extends Application {
 
     private Canvas canvas;
     private Group grupo;
+    private Scene escena;
     private GraphicsContext gc;
 
     private MusicPlayer reproductor;
@@ -44,6 +47,7 @@ public class Main extends Application {
     private Button botonA;
     private Button botonB;
     private Button dpad;
+    private TecladoFX teclado;
 
     final long startNanoTime = System.nanoTime();
 
@@ -74,8 +78,8 @@ public class Main extends Application {
     public void init() throws Exception {
         stateGame = StateGame.playing;
 
-        initializeControls();
         initializeGroup();
+        initializeControls();
         initializeCanvas();
         initializeReproductor();
         initializeArrayEntidad();
@@ -103,7 +107,7 @@ public class Main extends Application {
             }
         }.start();
 
-        reproductor.fadeInPlay(0.8);
+        reproductor.fadeInPlay(1);
 
         primaryStage.show();
     }
@@ -120,18 +124,22 @@ public class Main extends Application {
         primaryStage.centerOnScreen();
         primaryStage.requestFocus();
         primaryStage.setTitle("Proyecto - PP");
-        primaryStage.setScene(new Scene(grupo));    //Sigue siendo parte del setup, lo muevo aqui por comodidad.
+        primaryStage.setScene(escena);    //Uso una variable Scene para poder utilizar un teclado para pruebas.
     }
 
     private void initializeControls() {
         botonA = TouchControl.getBotonA();
         botonB = TouchControl.getBotonB();
         dpad = TouchControl.getDpad();
+
+        teclado = KeyboardControl.getTeclado();
+        teclado.setKeyboardOnScene(escena);
     }
 
     private void initializeGroup() {
-        //Aqui va la configuracion inicial del grupo
+        //Aqui va la configuracion inicial del grupo y escena
         grupo = new Group();
+        escena = new Scene(grupo);
     }
 
     private void initializeCanvas() {
@@ -140,7 +148,7 @@ public class Main extends Application {
     }
 
     private void initializeReproductor() {
-        reproductor = new MusicPlayer(AudioLoader.persona5Song);
+        reproductor = new MusicPlayer(AudioLoader.niwaYumeGaAru);
         reproductor.setVolume(0);
     }
 
@@ -186,43 +194,58 @@ public class Main extends Application {
 
     public void updateLogic()
     {
+
         if(stateGame==StateGame.playing)
         {
             Collections.sort(arrayEntidad, cmpArrayEntidad);    //Instancie el comparador en el initializeUtilities para que no se cree uno nuevo cada vez.
 
             texto.setText("EL puntaje es:"+puntaje+"                                   Gasolina:"+String.format("%.1f",camion.getGasolina()/10));
-            camion.move();
-            jugador.move();
-            boteAzul.move();
+
+            //Este es el metodo que determina que acciones estas tomando segun lo que presiones en el teclado (movimiento y demas)
+            updatePlayerMovement();
+
             arrayBasura.getArrayBasura().forEach(basura -> {
-                basura.move();
+
+
                 //collision de basura y jugador para agarra la basura
-                if (basura.collisionsWith(jugador.getX() + dx, jugador.getY() + dy, jugador.getWidth(), jugador.getHeight()) == 1) {
-                    jugador.setColisionado(true);
-                    basura.setCollision(true);
+                if (basura.nextTo(jugador.getX(), jugador.getY(), jugador.getWidth(), jugador.getHeight()) == 1) {
+                    basura.setNextToPlayer(true);
                 } else {
-                    jugador.setColisionado(false);
-                    basura.setCollision(false);
+                    basura.setNextToPlayer(false);
                 }
-                if(basura.collisionsWith(camion.getX(), camion.getY(), camion.getWidth(), camion.getHeight())==1)
-                {   // si el camion esta chocando a una basura se agrega esa basura a la lista de elimina
-                        remove.add(basura);
+
+                // si el camion esta chocando a una basura se agrega esa basura a la lista de elimina
+                if (basura.collisionsWith(camion.getX(), camion.getY(), camion.getWidth(), camion.getHeight()) == 1) {
+                    //Si la basura colisiono por que la cargaba el jugador:
+                    if (basura.isMoving()) {
+                        //El jugador deja de estar cargando esa basura.
+                        jugador.setOcupado(false);
+                    }
+                    remove.add(basura);
+
+                    //Por cierto, no deberiamos quitar esto ya que ya tenemos el bote azul?
                 }
+
                 //collision con para sacar puntaje
-                if(basura.isMoving())
-                {
-                    if (jugador.collisionsWith(boteAzul.getX(),boteAzul.getY(),boteAzul.getWidth(),boteAzul.getHeight())==1){
+                if (basura.isMoving()) {
+                    if (jugador.collisionsWith(boteAzul.getX(), boteAzul.getY(), boteAzul.getWidth(), boteAzul.getHeight()) == 1) {
                         remove.add(basura);
-                        camion.setGasolina(camion.getGasolina()+30);
+                        camion.setGasolina(camion.getGasolina() + 30);
                         puntaje++;
                         jugador.setOcupado(false);
                     }
                 }
+
+                //Si el jugador va a chocar con la basura...
                 if(basura.collisionsWith(jugador.getHitboxX()+dx,jugador.getHitboxY()+dy,jugador.getHitboxWidth(),jugador.getHitboxHeight())==1)
                 {
-
-                    dx=0;dy=0;
+                    //Entonces su cambio en x y y se vuelven 0
+                    dx=0;
+                    dy=0;
                 }
+
+                //Y solo es despues de todas estas comprobaciones que se mueve la basura.
+                basura.move();
 
             });
             //collision de jugador con el
@@ -230,13 +253,21 @@ public class Main extends Application {
             {
                 dx=0;
                 dy=0;
+
+                //Hay problemas con esto, por que si el camion te atraviesa mientras avanza por su cuenta, tu dejas de poder
+                //moverte completamente.
             }
+
             //Lista de elimianr (si es size de la lista eliminar se elimina)
             if(remove.size()>0)
             {
                 arrayBasura.getArrayBasura().removeAll(remove);
                 arrayEntidad.removeAll(remove);
-                jugador.setOcupado(false);
+                //Faltaba poner que se limpiara cada vez que eliminaba los objetos que hacia falta eliminar.
+                remove.clear();
+
+                //Quite lo de jugador.setOcupado por que habia basura que se encontraba en el camino del camion, chocaba,
+                //se mandaba a eliminar y nunca estuvo en las manos del jugador.
             }
             //fin de juego
         }
@@ -248,6 +279,135 @@ public class Main extends Application {
         {
             texto.setText("perdimos");
         }
+
+
+        //Los movimientos deberian hacerse todos al ultimo para darle tiempo al programa de procesar que es lo que debe
+        //hacer tomando en cuenta el estado actual del juego (y no me refiero a los states).
+        camion.move();
+        jugador.move();
+        boteAzul.move();
+
+
+    }
+
+    private void updatePlayerMovement() {
+
+        //Lo uso unicamente para el teclado.
+        //Si lo ponia de forma independiente o en otro thread, lo que pasaba es que podia brincarse las verificaciones
+        //que haciamos para colisiones y los botones.
+
+        if(teclado.isKeyPressed("UP") && !teclado.isKeyPressed("DOWN") ) {
+            Main.setDx(0);
+            Main.setDy(-2);
+
+            Main.getJugador().setState(StatePlayer.arriba);
+        }
+
+        if(teclado.isKeyPressed("DOWN")  && !teclado.isKeyPressed("UP") ) {
+            Main.setDx(0);
+            Main.setDy(2);
+
+            Main.getJugador().setState(StatePlayer.abajo);
+        }
+
+        if(teclado.isKeyPressed("RIGHT") && !teclado.isKeyPressed("LEFT")) {
+            Main.setDx(2);
+            Main.setDy(0);
+
+            if(teclado.isKeyPressed("UP")) {
+                Main.setDx(1.42);
+                Main.setDy(-1.42);
+            } else if(teclado.isKeyPressed("DOWN")) {
+                Main.setDx(1.42);
+                Main.setDy(1.42);
+            }
+
+            Main.getJugador().setState(StatePlayer.derecha);
+        }
+
+        if(teclado.isKeyPressed("LEFT") && !teclado.isKeyPressed("RIGHT")) {
+            Main.setDx(-2);
+            Main.setDy(0);
+
+            if(teclado.isKeyPressed("UP")) {
+                Main.setDx(-1.42);
+                Main.setDy(-1.42);
+            } else if(teclado.isKeyPressed("DOWN")) {
+                Main.setDx(-1.42);
+                Main.setDy(1.42);
+            }
+
+            Main.getJugador().setState(StatePlayer.izquierda);
+        }
+
+        if(teclado.isKeyPressed("RIGHT") && teclado.isKeyPressed("LEFT")) {
+            Main.setDx(0);
+
+            if(teclado.isKeyPressed("UP")) {
+                Main.setDy(-2);
+
+                Main.getJugador().setState(StatePlayer.arriba);
+            } else if(teclado.isKeyPressed("DOWN")){
+                Main.setDy(2);
+
+                Main.getJugador().setState(StatePlayer.abajo);
+            } else {
+                Main.setDy(0);
+            }
+        }
+
+        if(teclado.isKeyPressed("UP") && teclado.isKeyPressed("DOWN") ){
+            Main.setDy(0);
+
+            if(teclado.isKeyPressed("RIGHT")) {
+                Main.setDx(2);
+
+                Main.getJugador().setState(StatePlayer.derecha);
+            } else if(teclado.isKeyPressed("LEFT")){
+                Main.setDx(-2);
+
+                Main.getJugador().setState(StatePlayer.izquierda);
+            }else {
+                Main.setDx(0);
+            }
+        }
+
+        if(!teclado.isKeyPressed("UP") && !teclado.isKeyPressed("DOWN") &&
+           !teclado.isKeyPressed("LEFT") && !teclado.isKeyPressed("RIGHT") ) {
+
+            Main.setDx(0);
+            Main.setDy(0);
+        }
+
+        if(teclado.isKeyPressed("A")) {
+            if(!Main.getJugador().isOcupado())
+            {
+                for (Basura basura:
+                        Main.getArrayBasura().getArrayBasura()) {
+                    if(basura.isNextToPlayer())
+                    {
+                        basura.setMoving(true);
+
+                        Main.getJugador().setOcupado(true);
+                    }
+                }
+            }
+        }
+
+        if(teclado.isKeyPressed("S")) {
+            if(Main.getJugador().isOcupado())
+            {
+                for (Basura basura:
+                        Main.getArrayBasura().getArrayBasura()){
+                    if(basura.isMoving())
+                    {
+                        basura.setMoving(false);
+                        Main.getJugador().setOcupado(false);
+                    }
+                }
+            }
+        }
+
     }
 
     public void updateGraphic(GraphicsContext gc,double t)
@@ -282,6 +442,9 @@ public class Main extends Application {
         if(stateGame==StateGame.playing)
         {
             grupo.getChildren().addAll(botonA, botonB, dpad, texto);
+
+            //Temp
+            //escena.setOnKeyPressed(keyboardListener);
 
         }
 

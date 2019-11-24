@@ -1,7 +1,6 @@
 package controller;
 
 import botones.Button;
-import gameObjeto.ArrayBasura;
 import gameObjeto.Basura;
 import javafx.event.EventHandler;
 import javafx.scene.input.TouchEvent;
@@ -30,7 +29,7 @@ public final class TouchControl {
             {
                 for (Basura basura:
                         Main.getArrayBasura().getArrayBasura()) {
-                    if(basura.isCollision())
+                    if(basura.isNextToPlayer())
                     {
                         basura.setMoving(true);
 

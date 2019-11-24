@@ -4,28 +4,28 @@ import entidades.MovingIsoEntity;
 import sample.Main;
 
 public class Basura extends MovingIsoEntity {
-    private boolean collision;
+    private boolean nextToPlayer;
     private boolean moving;
 
     public Basura(String name, double x, double y, double width, double height, double hitboxSize) {
         super(name, x, y, width, height, hitboxSize);
         moving=false;
-        collision=false;
+        nextToPlayer =false;
     }
 
     public Basura(String name, double x, double y, double width, double height, double hitboxX, double hitboxY, double hitboxWidth, double hitboxHeight) {
         super(name, x, y, width, height, hitboxX, hitboxY, hitboxWidth, hitboxHeight);
         moving=false;
-        collision=false;
+        nextToPlayer =false;
     }
 
 
-    public boolean isCollision() {
-        return collision;
+    public boolean isNextToPlayer() {
+        return nextToPlayer;
     }
 
-    public void setCollision(boolean collision) {
-        this.collision = collision;
+    public void setNextToPlayer(boolean nextToPlayer) {
+        this.nextToPlayer = nextToPlayer;
     }
 
     public boolean isMoving() {

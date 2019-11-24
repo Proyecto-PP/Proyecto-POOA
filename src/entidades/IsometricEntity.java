@@ -111,12 +111,12 @@ public abstract class IsometricEntity extends Entity {
     /*
         Devuelve 1 en caso de que las coordenadas y datos enviados se encuentren
         en culaquier punto justo a un lado de la hitbox de la entidad. De otro modo, devuelve 0.
-        [No para esquinas]
+        [No para esquinas] [A 2 pixeles de adyacencia se considera que una entidad esta "nextTo" (al lado de) esta entidad]
     */
     @Override
     public int nextTo(double x, double y, double width, double height) {
-        if( (x + width + 1 >= this.hitboxX && x - 1 <= this.hitboxX + this.hitboxWidth) &&
-                (y + height + 1>= this.hitboxY && y - 1<= this.hitboxY + this.hitboxHeight)) {
+        if( (x + width + 2 >= this.hitboxX && x - 2 <= this.hitboxX + this.hitboxWidth) &&
+            (y + height + 2 >= this.hitboxY && y - 2 <= this.hitboxY + this.hitboxHeight)) {
 
             return 1;
         }
