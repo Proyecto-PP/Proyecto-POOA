@@ -197,6 +197,7 @@ public class Main extends Application {
 
         if(stateGame==StateGame.playing)
         {
+            bg.setBackgroundX( -camion.getDistance() );
             Collections.sort(arrayEntidad, cmpArrayEntidad);    //Instancie el comparador en el initializeUtilities para que no se cree uno nuevo cada vez.
 
             texto.setText("EL puntaje es:"+puntaje+"                                   Gasolina:"+String.format("%.1f",camion.getGasolina()/10));
@@ -314,6 +315,7 @@ public class Main extends Application {
             Main.setDx(2);
             Main.setDy(0);
 
+
             if(teclado.isKeyPressed("UP")) {
                 Main.setDx(1.42);
                 Main.setDy(-1.42);
@@ -402,10 +404,21 @@ public class Main extends Application {
                     if(basura.isMoving())
                     {
                         basura.setMoving(false);
-                        Main.getJugador().setOcupado(false);
+                        getJugador().setOcupado(false);
                     }
                 }
             }
+        }
+
+        if( !teclado.isKeyPressed("LEFT") && !teclado.isKeyPressed("RIGHT")
+                && !teclado.isKeyPressed("UP") && !teclado.isKeyPressed("DOWN")){
+            //Main.setDx(0);
+            //Main.setDy(0);
+            if(jugador.getX() > 0){
+                jugador.setX( jugador.getX() -1);
+                jugador.setHitboxX( jugador.getHitboxX() -1);
+            }
+
         }
 
     }
@@ -413,15 +426,23 @@ public class Main extends Application {
     public void updateGraphic(GraphicsContext gc,double t)
     {
         gc.clearRect(0,0,1024,600);
-        if(stateGame==StateGame.playing)
+        if(stateGame == StateGame.playing)
         {
-           paintBackground(gc);
+           bg.paintBackground(gc);
            arrayEntidad.forEach(objeto->
            {
-               if(objeto.getName()=="jugador") paintPlayer(gc,t);
-               else if(objeto.getName()=="basuraPlastico") gc.drawImage(ImageLoader.spritePlastico,objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
-               else if (objeto.getName()=="camion") gc.drawImage(ImageLoader.spriteCamion, objeto.getX(),objeto.getY(), objeto.getWidth(), objeto.getHeight());
-               else if(objeto.getName()=="boteAzul") gc.drawImage(ImageLoader.spriteBoteAzul,objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
+               if(objeto.getName()=="jugador") {
+                   paintPlayer(gc,t);
+               }
+               else if(objeto.getName()=="basuraPlastico") {
+                   gc.drawImage(ImageLoader.spritePlastico,objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
+               }
+               else if (objeto.getName()=="camion") {
+                   gc.drawImage(ImageLoader.spriteCamion, objeto.getX(),objeto.getY(), objeto.getWidth(), objeto.getHeight());
+               }
+               else if(objeto.getName()=="boteAzul") {
+                   gc.drawImage(ImageLoader.spriteBoteAzul,objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
+               }
            });
 
         }
@@ -455,13 +476,7 @@ public class Main extends Application {
         }
     }
 
-    private void paintBackground(GraphicsContext gc){
-        gc.drawImage(Background.GAME_BG, -(jugador.getX()-100),0, 1024, 600);
-        gc.drawImage(Background.GAME_BG, -(jugador.getX()-Background.MAP_WIDTH), 0, 1024, 600);
 
-   //  gc.drawImage(Background.GAME_BG,0,0,1024,600);
-
-    }
 
 
     public void paintPlayer(GraphicsContext gc,double t)
@@ -477,13 +492,24 @@ public class Main extends Application {
         }
         else if(jugador.getState()==StatePlayer.derecha)
         {
-            if (dx!=0) gc.drawImage(ImageLoader.caminaderecho.getFrame(t),jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
-            else gc.drawImage(ImageLoader.paradoDerecho,jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
+            if (dx!=0) {
+                gc.drawImage(ImageLoader.caminaderecho.getFrame(t),jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
+
+            }
+
+            else {
+                gc.drawImage(ImageLoader.paradoDerecho,jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
+            }
+
         }
         else if(jugador.getState()==StatePlayer.izquierda)
         {
-            if(dx!=0) gc.drawImage(ImageLoader.caminaIzquierda.getFrame(t),jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
-            else gc.drawImage(ImageLoader.paradoIzquierda,jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
+            if(dx!=0) {
+                gc.drawImage(ImageLoader.caminaIzquierda.getFrame(t), jugador.getX(), jugador.getY(), jugador.getWidth(), jugador.getHeight());
+            }
+            else {
+                gc.drawImage(ImageLoader.paradoIzquierda,jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
+            }
         }
 
 

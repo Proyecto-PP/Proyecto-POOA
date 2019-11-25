@@ -47,16 +47,20 @@ public class Basura extends MovingIsoEntity {
         }
         if(!moving)
         {
+            setX(getX()- 1);
+            setHitboxX(getHitboxX()- 1);
             if(Main.getDx()>0)
             {
-                setX(getX()-0.16);
-                setHitboxX(getHitboxX()-0.16);
+
             }
             else
                 if(Main.getDx()<0)
                 {
+                    /*
                     setX(getX()+0.16);
                     setHitboxX(getHitboxX()+0.16);
+
+                     */
                 }
         }
 

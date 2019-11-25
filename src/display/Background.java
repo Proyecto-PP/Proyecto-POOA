@@ -1,6 +1,7 @@
 package display;
 
 import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import resourceLoaders.ImageLoader;
 
@@ -26,6 +27,8 @@ public class Background {
     public static int MAP_WIDTH;
     public static int MAP_HEIGHT;
 
+    private int bgX;
+
     public Background(){
         GAME_BG = createBackground();
         MAP_WIDTH = (int) (GAME_MAP[0].length*ImageLoader.TILES[0].getWidth());
@@ -44,5 +47,22 @@ public class Background {
             }
         }
         return SwingFXUtils.toFXImage(newImage,null);
+    }
+
+    public void paintBackground(GraphicsContext gc){
+        gc.drawImage(GAME_BG, bgX,0, 1024, 600);
+        gc.drawImage(GAME_BG, bgX+1024, 0, 1024, 600);
+
+    }
+
+    public int getBackgroundX() {
+        return bgX;
+    }
+
+    public void setBackgroundX(int distance) {
+        if(distance % 1024 == 0)
+            this.bgX = 0;
+        else
+            this.bgX -= 1;
     }
 }

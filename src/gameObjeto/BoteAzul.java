@@ -16,6 +16,7 @@ public class BoteAzul extends MovingIsoEntity {
 
     @Override
     public void move() {
+        /*
         if(Main.getCamion().getGasolina()>0)
         {
             if(Main.getJugador().getX()+Main.getJugador().getWidth()>600&&Main.getDx()>0)
@@ -43,5 +44,7 @@ public class BoteAzul extends MovingIsoEntity {
 
             }
         }
+
+         */
     }
 }

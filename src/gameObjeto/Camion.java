@@ -5,11 +5,12 @@ import sample.Main;
 
 public class Camion extends MovingIsoEntity {
 
-
+    private int distance;
     private float gasolina=1000;
 
     public Camion(String name, double x, double y, double width, double height, double hitboxSize) {
         super(name, x, y, width, height, hitboxSize);
+        distance = 0;
     }
 
     public Camion(String name, double x, double y, double width, double height, double hitboxX, double hitboxY, double hitboxWidth, double hitboxHeight) {
@@ -28,6 +29,9 @@ public class Camion extends MovingIsoEntity {
     public void move() {
         if(gasolina>0)
         {
+            distance++;
+            gasolina -= 0.16 ;
+            /*
             if(Main.getJugador().getX()+Main.getJugador().getWidth()>600&&Main.getDx()>0)
             {
                 setX(getX() -0.2);
@@ -52,6 +56,12 @@ public class Camion extends MovingIsoEntity {
                 setHitboxX(getHitboxX() + 0.16);
                 gasolina-=0.16;
             }
+
+             */
         }
+    }
+
+    public int getDistance() {
+        return distance;
     }
 }
