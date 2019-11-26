@@ -20,8 +20,16 @@ public final class ImageLoader {
     public  static AnimatedImage caminaAbajo=new AnimatedImage();
     public static AnimatedImage caminaderecho=new AnimatedImage();
     public final static Image spritePlastico =new Image("file:resources//sprites//objeto//vidrio.png");
+    public final static Image spriteManzana =new Image("file:resources//sprites//objeto//manzana.png");
+    public final static Image spritePeriodico =new Image("file:resources//sprites//objeto//Periodico.png");
+    public final static Image spriteBanana =new Image("file:resources//sprites//objeto//banana.png");
+    public final static Image spriteSandia =new Image("file:resources//sprites//objeto//sandia.png");
+    public final static Image spriteBolaPapel =new Image("file:resources//sprites//objeto//bolaPapel.png");
+    public final static Image spritePapelAvion =new Image("file:resources//sprites//objeto//papelAvion.png");
+    public final static Image spriteFoco =new Image("file:resources//sprites//objeto//Foco.png");
+
     public final static Image spriteCamion=new Image("file:resources//sprites//objeto//Camion.png");
-    public final static Image spriteBoteAzul= new Image("file:resources//sprites//objeto//BoteAzul.png");
+    public final static Image spriteBoteAzul= new Image("file:resources//sprites//objeto//BoteBasura.png");
     public final static Image[][] arrayImage = new Image[4][4];
 
     public static Image[] TILES;

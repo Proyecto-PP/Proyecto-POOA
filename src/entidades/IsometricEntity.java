@@ -9,9 +9,9 @@ public abstract class IsometricEntity extends Entity {
     private double hitboxWidth;
     private double hitboxHeight;
 
-    public IsometricEntity(String name,double x, double y, double width, double height) {
+    public IsometricEntity(double x, double y, double width, double height) {
 
-        super(name,x, y, width, height);
+        super(x, y, width, height);
 
         this.hitboxX = x;
         this.hitboxY = y;
@@ -19,9 +19,9 @@ public abstract class IsometricEntity extends Entity {
         this.hitboxHeight = height;
     }
 
-    public IsometricEntity(String name,double x, double y, double width, double height, double hitboxSize) {
+    public IsometricEntity(double x, double y, double width, double height, double hitboxSize) {
 
-        super(name,x, y, width, height);
+        super(x, y, width, height);
 
         if(hitboxSize > 0 && hitboxSize <= 1) {
             /*  Define el tamaño que ocupa la caja de colisiones
@@ -44,10 +44,10 @@ public abstract class IsometricEntity extends Entity {
         }
     }
 
-    public IsometricEntity(String name,double x, double y, double width, double height,
+    public IsometricEntity(double x, double y, double width, double height,
                            double hitboxX, double hitboxY, double hitboxWidth, double hitboxHeight) {
 
-        super(name,x, y, width, height);
+        super(x, y, width, height);
 
         /*
             Define el tamaño que ocupa la caja de colisiones

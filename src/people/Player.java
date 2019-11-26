@@ -13,15 +13,15 @@ public class Player extends MovingIsoEntity {
     private final double dashTime = 0.15; //seg
     private double dashFrames;
 
-    public Player(String name, double x, double y, double width, double height, double hitboxSize) {
-        super(name, x, y, width, height, hitboxSize);
+    public Player( double x, double y, double width, double height, double hitboxSize) {
+        super( x, y, width, height, hitboxSize);
         state=StatePlayer.abajo;
         colisionado=false;
         ocupado=false;
     }
 
-    public Player(String name, double x, double y, double width, double height, double hitboxX, double hitboxY, double hitboxWidth, double hitboxHeight) {
-        super(name, x, y, width, height, hitboxX, hitboxY, hitboxWidth, hitboxHeight);
+    public Player( double x, double y, double width, double height, double hitboxX, double hitboxY, double hitboxWidth, double hitboxHeight) {
+        super( x, y, width, height, hitboxX, hitboxY, hitboxWidth, hitboxHeight);
         state=StatePlayer.abajo;
         colisionado=false;
         ocupado=false;

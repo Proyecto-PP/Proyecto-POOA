@@ -3,15 +3,22 @@ package sample;
 import botones.Button;
 import controller.ControlInput;
 import controller.ControlsSetup;
-import controller.KeyboardControl;
-import controller.TouchControl;
 
 import display.Background;
 import entidades.Entity;
-import gameObjeto.ArrayBasura;
-import gameObjeto.Basura;
-import gameObjeto.BoteAzul;
-import gameObjeto.Camion;
+import gameObjeto.*;
+import gameObjeto.basura.Basura;
+import gameObjeto.basura.basuraOrganica.BasuraBanana;
+import gameObjeto.basura.basuraOrganica.BasuraManzana;
+import gameObjeto.basura.basuraOrganica.BasuraSandia;
+import gameObjeto.basura.basuraPapel.BasuraBolaPapel;
+import gameObjeto.basura.basuraPapel.BasuraPapelAvion;
+import gameObjeto.basura.basuraPapel.BasuraPeriodico;
+import gameObjeto.basura.basuraPlastico.BasuraBotella;
+import gameObjeto.basura.basuraPlastico.BasuraPlastico;
+import gameObjeto.basura.basuraVidrio.BasuraFoco;
+import gameObjeto.boteBasura.BoteBasura;
+import gameObjeto.boteBasura.BotePlastico;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.Group;
@@ -66,9 +73,9 @@ public class Main extends Application {
     *  te libras de cosas redundantes como Main.getArrayBasura().getArrayBasura(); [TouchControl : 32]
     */
     private static ArrayBasura arrayBasura = new ArrayBasura();
-    private static Player jugador = new Player("jugador", 100, 100, 32, 48, 0.5);
-    private static Camion camion = new Camion("camion", 100, 200, 200, 100, 0.5);
-    private static BoteAzul boteAzul = new BoteAzul("boteAzul", 50, 250, 50, 50, 1);
+    private static Player jugador = new Player( 100, 100, 32, 48, 0.5);
+    private static Camion camion = new Camion(100, 200, 200, 100, 0.5);
+    private static BotePlastico boteAzul = new BotePlastico( 50, 250, 50, 50, 1);
     Iterator<Basura> array = arrayBasura.getArrayBasura().iterator();
     List<Basura> remove = new ArrayList();
     private ArrayList<Entity> arrayEntidad;
@@ -231,11 +238,15 @@ public class Main extends Application {
 
                 //collision con para sacar puntaje
                 if (basura.isMoving()) {
+                    //si el jugador llevando una basura y conllisiona con el bote plastico
                     if (jugador.collisionsWith(boteAzul.getX(), boteAzul.getY(), boteAzul.getWidth(), boteAzul.getHeight()) == 1) {
-                        remove.add(basura);
-                        camion.setGasolina(camion.getGasolina() + 30);
-                        puntaje++;
-                        jugador.setOcupado(false);
+                        if(basura instanceof BasuraPlastico)
+                        {   // si la basura que lleva es plastico obtenr punto y gasolina
+                            accionCollisionBoteObtenerPunto(basura);
+                        }
+                        else
+                            // si l a basura no es plastico se pierde punto y gasolina
+                            accionCollisionBotePierdePunto(basura);
                     }
                 }
 
@@ -293,6 +304,22 @@ public class Main extends Application {
         boteAzul.move();
 
 
+    }
+
+    private void accionCollisionBoteObtenerPunto(Basura basura)
+    {
+        remove.add(basura);
+        camion.setGasolina(camion.getGasolina() + 30);
+        puntaje++;
+        jugador.setOcupado(false);
+    }
+
+    private void accionCollisionBotePierdePunto(Basura basura)
+    {
+        remove.add(basura);
+        camion.setGasolina(camion.getGasolina() - 30);
+        puntaje--;
+        jugador.setOcupado(false);
     }
 
     private void updatePlayerMovement() {
@@ -445,9 +472,16 @@ public class Main extends Application {
            arrayEntidad.forEach(objeto->
            {
                if(objeto instanceof Player) paintPlayer(gc,t);
-               else if(objeto instanceof Basura) gc.drawImage(ImageLoader.spritePlastico,objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
+               else if(objeto instanceof BasuraBotella) gc.drawImage(ImageLoader.spritePlastico,objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
+               else if(objeto instanceof BasuraManzana) gc.drawImage(ImageLoader.spriteManzana,objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
+               else if(objeto instanceof BasuraPeriodico) gc.drawImage(ImageLoader.spritePeriodico,objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
+               else if(objeto instanceof BasuraBanana) gc.drawImage(ImageLoader.spriteBanana,objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
+               else if(objeto instanceof BasuraSandia) gc.drawImage(ImageLoader.spriteSandia,objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
+               else if(objeto instanceof BasuraBolaPapel) gc.drawImage(ImageLoader.spriteBolaPapel,objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
+               else if(objeto instanceof BasuraPapelAvion) gc.drawImage(ImageLoader.spritePapelAvion,objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
+               else if(objeto instanceof BasuraFoco) gc.drawImage(ImageLoader.spriteFoco,objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
                else if (objeto instanceof Camion) gc.drawImage(ImageLoader.spriteCamion, objeto.getX(),objeto.getY(), objeto.getWidth(), objeto.getHeight());
-               else if(objeto instanceof BoteAzul) gc.drawImage(ImageLoader.spriteBoteAzul,objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
+               else if(objeto instanceof BoteBasura) gc.drawImage(ImageLoader.spriteBoteAzul,objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
            });
 
         }

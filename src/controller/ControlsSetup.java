@@ -1,11 +1,10 @@
 package controller;
 
 import botones.Button;
-import gameObjeto.Basura;
+import gameObjeto.basura.Basura;
 import javafx.event.EventHandler;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.TouchEvent;
-import people.StatePlayer;
 import resourceLoaders.ImageLoader;
 import sample.Main;
 import teclado.TecladoFX;
