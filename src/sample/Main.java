@@ -56,6 +56,7 @@ public class Main extends Application {
     private static double dx;
     private static double dy;
     public static final double DASH_SPEED_MULT = 4;
+    private static int dashCooldown;        //En frames 60 frames - 1 seg
 
     private int puntaje;        //puntaje, como es un atributo de clase, se inicializa en 0 por default.
     Text texto = new Text();
@@ -110,7 +111,7 @@ public class Main extends Application {
             }
         }.start();
 
-        reproductor.fadeInPlay(1);
+        //reproductor.fadeInPlay(1);
 
         primaryStage.show();
     }
@@ -218,7 +219,11 @@ public class Main extends Application {
                 }
 
                 // si el camion esta chocando a una basura se agrega esa basura a la lista de elimina
-                if (basura.collisionsWith(camion.getX(), camion.getY(), camion.getWidth(), camion.getHeight()) == 1) {
+                //------
+                //Esto deberia eliminarse, pues solamente los compartimientos deberian de poder eliminar la basura si es
+                //del tipo adecuado.
+                //Lo comento para hacer pruebas.
+                /*if (basura.collisionsWith(camion.getX(), camion.getY(), camion.getWidth(), camion.getHeight()) == 1) {
                     //Si la basura colisiono por que la cargaba el jugador:
                     if (basura.isMoving()) {
                         //El jugador deja de estar cargando esa basura.
@@ -227,11 +232,11 @@ public class Main extends Application {
                     remove.add(basura);
 
                     //Por cierto, no deberiamos quitar esto ya que ya tenemos el bote azul?
-                }
+                }*/
 
                 //collision con para sacar puntaje
                 if (basura.isMoving()) {
-                    if (jugador.collisionsWith(boteAzul.getX(), boteAzul.getY(), boteAzul.getWidth(), boteAzul.getHeight()) == 1) {
+                    if (jugador.collisionsWith(boteAzul.getHitboxX(), boteAzul.getHitboxY(), boteAzul.getHitboxWidth(), boteAzul.getHitboxHeight()) == 1) {
                         remove.add(basura);
                         camion.setGasolina(camion.getGasolina() + 30);
                         puntaje++;
@@ -245,6 +250,8 @@ public class Main extends Application {
                     //Entonces su cambio en x y y se vuelven 0
                     dx=0;
                     dy=0;
+
+                    jugador.setDashing(false);
                 }
 
                 //Y solo es despues de todas estas comprobaciones que se mueve la basura.
@@ -254,6 +261,13 @@ public class Main extends Application {
             //collision de jugador con el
             if(camion.collisionsWith(jugador.getHitboxX()+dx,jugador.getHitboxY()+dy,jugador.getHitboxWidth(),jugador.getHitboxHeight())==1)
             {
+                if(dx < 0 && jugador.getHitboxX() > (camion.getHitboxX() + camion.getHitboxWidth()) ) {
+
+                } else {
+                    camion.move();
+                    boteAzul.move();
+                }
+
                 dx=0;
                 dy=0;
 
@@ -261,6 +275,11 @@ public class Main extends Application {
 
                 //Hay problemas con esto, por que si el camion te atraviesa mientras avanza por su cuenta, tu dejas de poder
                 //moverte completamente.
+            } else {
+                //Que solo se pueda mover si no colisiona con el jugador?
+                camion.move();
+                boteAzul.move();
+
             }
 
             //Lista de elimianr (si es size de la lista eliminar se elimina)
@@ -288,9 +307,10 @@ public class Main extends Application {
 
         //Los movimientos deberian hacerse todos al ultimo para darle tiempo al programa de procesar que es lo que debe
         //hacer tomando en cuenta el estado actual del juego (y no me refiero a los states).
-        camion.move();
+
+        //camion.move();
         jugador.move();
-        boteAzul.move();
+        //boteAzul.move();
 
 
     }
@@ -385,29 +405,25 @@ public class Main extends Application {
                 Main.setDy(0);
             }
 
-            //Esto no funciona bien, no se alarmen
             if (ControlInput.isButtonPressed("S")) {
-
-
 
                 if(!ControlInput.isAltButtonA()) {
                     if (!Main.getJugador().isOcupado()) {
 
                         for (Basura basura :
                                 Main.getArrayBasura().getArrayBasura()) {
-                            if (basura.isNextToPlayer()) {
-                                basura.setMoving(true);
-
-                                Main.getJugador().setOcupado(true);
-                            }
+                            if (basura.isNextToPlayer() && !jugador.isOcupado()) {      //Mas de una basura se podia mover
+                                jugador.setOcupado(true);                               //por que no consideramos que el jugador
+                                basura.setMoving(true);                                 //podia volverse ocupado dentro de este mismo
+                            }                                                           //ciclo.
                         }
-                    } else if (Main.getJugador().isOcupado()) {
+                    } else {
 
                         for (Basura basura :
                                 Main.getArrayBasura().getArrayBasura()) {
-                            if (basura.isMoving()) {
+                            if (basura.isMoving() && jugador.isOcupado()) {
+                                jugador.setOcupado(false);
                                 basura.setMoving(false);
-                                Main.getJugador().setOcupado(false);
                             }
                         }
                     }
@@ -420,20 +436,23 @@ public class Main extends Application {
             }
 
             if (ControlInput.isButtonPressed("D")) {
-                if( (dx != 0 || dy != 0) && !ControlInput.isAltButtonB()) {     //Si se está moviendo hacia alguna direccion.
+                if( (dx != 0 || dy != 0) && !ControlInput.isAltButtonB() && dashCooldown == 0) {     //Si se está moviendo hacia alguna direccion.
                     jugador.setDashing(true);
                     ControlInput.setAltButtonB(true);
                 }
             } else {        //Necesitamos que pueda realizar su funcionalidad UNA vez hasta que lo vuelva a presionar.
                             //Con esto lo que hago es obligar al usuario a levantar el dedo de la tecla, y solo despues
-                            //de que lo haga es que puede volver a utilizar el boton. Lo mismo con el de arriba.a
+                            //de que lo haga es que puede volver a utilizar el boton. Lo mismo con el de arriba.
                 ControlInput.setAltButtonB(false);
             }
 
+            if(dashCooldown > 0) {
+                dashCooldown--;
+            }
 
         } else {
 
-            //Si el jugador está haciendo un dash
+            //Si el jugador está haciendo un dash no deberia de poder moverse por en medio.
 
             if(jugador.getDashFrames() != jugador.getDashTime()*60 ) {
                 if(jugador.getDashFrames() == 0) {
@@ -444,6 +463,7 @@ public class Main extends Application {
             } else {
                 jugador.setDashing(false);
                 jugador.setDashFrames(0);
+                dashCooldown = 60;     //frames - 1 seg
             }
 
 
