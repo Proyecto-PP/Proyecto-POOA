@@ -4,11 +4,11 @@ import javafx.scene.image.Image;
 
 public class AnimatedImage
 {
-    public  Image[] frames;
-    public   double duration;
+    public Image[] frames;
+    public double duration;
 
 
-    public  Image getFrame(double time)
+    public Image getFrame(double time)
     {
 
         int index = (int)((time % (frames.length * duration)) / duration);

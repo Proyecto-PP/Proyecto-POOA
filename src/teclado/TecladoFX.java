@@ -1,5 +1,6 @@
 package teclado;
 
+import controller.ControlInput;
 import javafx.animation.AnimationTimer;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
@@ -7,7 +8,7 @@ import javafx.scene.input.KeyEvent;
 
 import java.util.ArrayList;
 
-public class TecladoFX {
+public abstract class TecladoFX {
 
     //Puede ser estatico, es solo por las pruebas que estaba realizando que sigue siendo una clase instanciable.
 
@@ -28,13 +29,13 @@ public class TecladoFX {
         //Si presionas cualquier teclas
         keyPressHandler = (EventHandler<KeyEvent>) event -> {
             //Si la tecla esta en el array de las teclas registradas, entonces le dice al teclado que esa tecla esta activa.
-            setKeyPressed(event.getCode().getName(),true);
+            actionOnPress(event);
         };
 
         //Si sueltas una tecla...
         keyReleaseHandler = (EventHandler<KeyEvent>) event -> {
             //Si esta en el array de teclas registradas entonces pone que esa tecla esta deshabilitada.
-            setKeyPressed(event.getCode().getName(),false);
+            actionOnRelease(event);
         };
 
     }
@@ -44,6 +45,9 @@ public class TecladoFX {
         scene.setOnKeyPressed(keyPressHandler);
         scene.setOnKeyReleased(keyReleaseHandler);
     }
+
+    public abstract void actionOnPress(KeyEvent event);
+    public abstract void actionOnRelease(KeyEvent event);
 
     public void addKey(String key) {
         //El KeyCode para el evento SI diferencia entre mayusculas y minusculas. Volver cualquiera a mayusculas lo hace indiferente a esos casos.

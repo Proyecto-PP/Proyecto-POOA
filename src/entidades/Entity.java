@@ -6,7 +6,6 @@ import java.io.Serializable;
 
 public abstract class Entity implements Serializable {
 
-
     private String name;
     private double x;
     private double y;
