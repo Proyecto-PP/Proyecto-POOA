@@ -34,32 +34,12 @@ public final class ControlsSetup {
         botonA.setOnTouchPressed(event -> {
             botonA.setOpacity(1.0);
             //Lo que quieres que haga el boton A
+            ControlInput.setButtonPressed("S", true);
         });
         botonA.setOnTouchReleased(event -> {
             botonA.setOpacity(0.65);
             //Lo que quieres que haga el boton A cuando se suelta.
-            if(!Main.getJugador().isOcupado())
-            {
-                for (Basura basura:
-                        Main.getArrayBasura().getArrayBasura()) {
-                    if(basura.isNextToPlayer())
-                    {
-                        basura.setMoving(true);
-
-                        Main.getJugador().setOcupado(true);
-                    }
-                }
-            } else if(Main.getJugador().isOcupado()) {
-                for (Basura basura:
-                        Main.getArrayBasura().getArrayBasura()){
-                    if(basura.isMoving())
-                    {
-                        basura.setMoving(false);
-                        //basura.setCollision(false);
-                        Main.getJugador().setOcupado(false);
-                    }
-                }
-            }
+            ControlInput.setButtonPressed("S", false);
 
         });
 
@@ -69,12 +49,12 @@ public final class ControlsSetup {
         botonB.setOnTouchPressed(event -> {
             botonB.setOpacity(1.0);
             //Lo que quieres que haga el boton B
+            ControlInput.setButtonPressed("D", true);   //D de dash
         });
         botonB.setOnTouchReleased(event -> {
             botonB.setOpacity(0.65);
             //Lo que quieres que haga el boton B cuando se suelta.
-            if(!Main.getJugador().isDashing())
-                Main.getJugador().setDashing(true);
+            ControlInput.setButtonPressed("D", false);   //D de dash
         });
 
 

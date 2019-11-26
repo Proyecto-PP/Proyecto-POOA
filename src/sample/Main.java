@@ -387,32 +387,47 @@ public class Main extends Application {
 
             //Esto no funciona bien, no se alarmen
             if (ControlInput.isButtonPressed("S")) {
-                if (!Main.getJugador().isOcupado()) {
-                    for (Basura basura :
-                            Main.getArrayBasura().getArrayBasura()) {
-                        if (basura.isNextToPlayer()) {
-                            basura.setMoving(true);
 
-                            Main.getJugador().setOcupado(true);
+
+
+                if(!ControlInput.isAltButtonA()) {
+                    if (!Main.getJugador().isOcupado()) {
+
+                        for (Basura basura :
+                                Main.getArrayBasura().getArrayBasura()) {
+                            if (basura.isNextToPlayer()) {
+                                basura.setMoving(true);
+
+                                Main.getJugador().setOcupado(true);
+                            }
+                        }
+                    } else if (Main.getJugador().isOcupado()) {
+
+                        for (Basura basura :
+                                Main.getArrayBasura().getArrayBasura()) {
+                            if (basura.isMoving()) {
+                                basura.setMoving(false);
+                                Main.getJugador().setOcupado(false);
+                            }
                         }
                     }
-                } else if (Main.getJugador().isOcupado()) {
 
-                    //Deberia hacerse en release de alguna forma, recuerda que se hacen varios press si lo dejas presionado.
-                    //Esto no funciona bien
-                    for (Basura basura :
-                            Main.getArrayBasura().getArrayBasura()) {
-                        if (basura.isMoving()) {
-                            basura.setMoving(false);
-                            Main.getJugador().setOcupado(false);
-                        }
-                    }
+                    ControlInput.setAltButtonA(true);   //Es un switch, para saber si soltaron o no la tecla.
                 }
+
+            } else {
+                ControlInput.setAltButtonA(false);
             }
 
             if (ControlInput.isButtonPressed("D")) {
-                if(dx != 0 || dy != 0)      //Si se está moviendo hacia alguna direccion.
+                if( (dx != 0 || dy != 0) && !ControlInput.isAltButtonB()) {     //Si se está moviendo hacia alguna direccion.
                     jugador.setDashing(true);
+                    ControlInput.setAltButtonB(true);
+                }
+            } else {        //Necesitamos que pueda realizar su funcionalidad UNA vez hasta que lo vuelva a presionar.
+                            //Con esto lo que hago es obligar al usuario a levantar el dedo de la tecla, y solo despues
+                            //de que lo haga es que puede volver a utilizar el boton. Lo mismo con el de arriba.a
+                ControlInput.setAltButtonB(false);
             }
 
 
