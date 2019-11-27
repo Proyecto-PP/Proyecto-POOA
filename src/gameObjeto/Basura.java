@@ -47,8 +47,8 @@ public class Basura extends MovingIsoEntity {
         }
         if(!moving)
         {
-            setX(getX()- 1);
-            setHitboxX(getHitboxX()- 1);
+            setX(getX() - Camion.SPEED);
+            setHitboxX(getHitboxX()- Camion.SPEED);
             if(Main.getDx()>0)
             {
 

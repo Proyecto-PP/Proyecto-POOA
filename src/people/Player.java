@@ -1,13 +1,18 @@
 package people;
 
 import entidades.MovingIsoEntity;
+import resourceLoaders.ImageLoader;
 import sample.Main;
+
+import java.awt.Image;
 
 public class Player extends MovingIsoEntity {
     private static int vida=3;
     public StatePlayer state;
     private boolean colisionado;
     private boolean ocupado;
+
+    public static final double SPEED = 4;
 
     public Player(String name, double x, double y, double width, double height, double hitboxSize) {
         super(name, x, y, width, height, hitboxSize);
@@ -51,17 +56,27 @@ public class Player extends MovingIsoEntity {
     @Override
     public void move() {
 
-        if(getX()+Main.getDx()>800)
-        {
-
+        if(getX() + Main.getDx() < 0){
+            setX(0);
+            setHitboxX(0);
         }
-        else
-        {
+        else if(getY() + Main.getDy() < 0){
+            setY(0);
+            setHitboxY(0);
+        }
+        else if(getX() + Main.getDx() > 1024- ImageLoader.paradoArriba.getWidth()){
+            setX(1024- ImageLoader.paradoArriba.getWidth());
+            setHitboxX(1024- ImageLoader.paradoArriba.getWidth());
+        }
+        else if(getY() + Main.getDy() > 600- ImageLoader.paradoArriba.getHeight()){
+            setY(600 - ImageLoader.paradoArriba.getHeight());
+            setHitboxY(600- ImageLoader.paradoArriba.getHeight());
+        }
+        else{
             setX(getX() + Main.getDx());
             setY(getY() + Main.getDy());
             setHitboxX(getHitboxX() + Main.getDx());
             setHitboxY(getHitboxY() + Main.getDy());
         }
-
     }
 }

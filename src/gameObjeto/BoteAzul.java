@@ -16,6 +16,8 @@ public class BoteAzul extends MovingIsoEntity {
 
     @Override
     public void move() {
+        //setX( getX() + Camion.SPEED);
+        //setHitboxX(getHitboxX() + Camion.SPEED);
         /*
         if(Main.getCamion().getGasolina()>0)
         {

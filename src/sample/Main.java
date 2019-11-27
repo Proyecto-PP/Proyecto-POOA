@@ -16,6 +16,7 @@ import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
@@ -54,6 +55,9 @@ public class Main extends Application {
     private static double dx;
     private static double dy;
 
+    private boolean intro = true;
+    private boolean shift = false; //False = derecha
+
     private int puntaje;        //puntaje, como es un atributo de clase, se inicializa en 0 por default.
     Text texto = new Text();
 
@@ -77,7 +81,6 @@ public class Main extends Application {
     @Override
     public void init() throws Exception {
         stateGame = StateGame.playing;
-
         initializeGroup();
         initializeControls();
         initializeCanvas();
@@ -102,16 +105,22 @@ public class Main extends Application {
             @Override
             public void handle(long now) {
                 double t = (now - startNanoTime) / 1000000000.0;
-                updateLogic();
-                updateGraphic(gc, t);
+
+                if(intro) {
+                    showLevel(t);
+                }
+                else {
+                    updateLogic();
+                    updateGraphic(gc, t);
+                }
             }
         }.start();
 
-        reproductor.fadeInPlay(1);
+        //reproductor.fadeInPlay(1);
 
         primaryStage.show();
-    }
 
+    }
 
 
     ////////////////////////////////////////////
@@ -190,7 +199,21 @@ public class Main extends Application {
     /*          Bloque de setup [FIN]         */
     ////////////////////////////////////////////
 
-
+    private void showLevel(double t) {
+        if (!shift) {
+            bg.setBackgroundX(bg.getBackgroundX() - 9);
+            if(bg.getBackgroundX()-1024 < -bg.getGameBg().getWidth())
+                shift = true;
+        } else {
+            bg.setBackgroundX(bg.getBackgroundX() + 9);
+            if (bg.getBackgroundX() >= 0) {
+                bg.setBackgroundX(0);
+                intro = false;
+            }
+        }
+        System.out.printf("%d\r", bg.getBackgroundX());
+        updateGraphic(gc, t);
+    }
 
     public void updateLogic()
     {
@@ -299,44 +322,44 @@ public class Main extends Application {
 
         if(teclado.isKeyPressed("UP") && !teclado.isKeyPressed("DOWN") ) {
             Main.setDx(0);
-            Main.setDy(-2);
+            Main.setDy(-Player.SPEED);
 
             Main.getJugador().setState(StatePlayer.arriba);
         }
 
         if(teclado.isKeyPressed("DOWN")  && !teclado.isKeyPressed("UP") ) {
             Main.setDx(0);
-            Main.setDy(2);
+            Main.setDy(Player.SPEED);
 
             Main.getJugador().setState(StatePlayer.abajo);
         }
 
         if(teclado.isKeyPressed("RIGHT") && !teclado.isKeyPressed("LEFT")) {
-            Main.setDx(2);
+            Main.setDx(Player.SPEED);
             Main.setDy(0);
 
 
             if(teclado.isKeyPressed("UP")) {
-                Main.setDx(1.42);
-                Main.setDy(-1.42);
+                Main.setDx(Player.SPEED/2);
+                Main.setDy(-Player.SPEED/2);
             } else if(teclado.isKeyPressed("DOWN")) {
-                Main.setDx(1.42);
-                Main.setDy(1.42);
+                Main.setDx(Player.SPEED/2);
+                Main.setDy(Player.SPEED/2);
             }
 
             Main.getJugador().setState(StatePlayer.derecha);
         }
 
         if(teclado.isKeyPressed("LEFT") && !teclado.isKeyPressed("RIGHT")) {
-            Main.setDx(-2);
+            Main.setDx(-Player.SPEED);
             Main.setDy(0);
 
             if(teclado.isKeyPressed("UP")) {
-                Main.setDx(-1.42);
-                Main.setDy(-1.42);
+                Main.setDx(-Player.SPEED/2);
+                Main.setDy(-Player.SPEED/2);
             } else if(teclado.isKeyPressed("DOWN")) {
-                Main.setDx(-1.42);
-                Main.setDy(1.42);
+                Main.setDx(-Player.SPEED/2);
+                Main.setDy(Player.SPEED/2);
             }
 
             Main.getJugador().setState(StatePlayer.izquierda);
@@ -346,11 +369,11 @@ public class Main extends Application {
             Main.setDx(0);
 
             if(teclado.isKeyPressed("UP")) {
-                Main.setDy(-2);
+                Main.setDy(-Player.SPEED);
 
                 Main.getJugador().setState(StatePlayer.arriba);
             } else if(teclado.isKeyPressed("DOWN")){
-                Main.setDy(2);
+                Main.setDy(Player.SPEED);
 
                 Main.getJugador().setState(StatePlayer.abajo);
             } else {
@@ -362,11 +385,11 @@ public class Main extends Application {
             Main.setDy(0);
 
             if(teclado.isKeyPressed("RIGHT")) {
-                Main.setDx(2);
+                Main.setDx(Player.SPEED);
 
                 Main.getJugador().setState(StatePlayer.derecha);
             } else if(teclado.isKeyPressed("LEFT")){
-                Main.setDx(-2);
+                Main.setDx(-Player.SPEED);
 
                 Main.getJugador().setState(StatePlayer.izquierda);
             }else {
@@ -414,9 +437,9 @@ public class Main extends Application {
                 && !teclado.isKeyPressed("UP") && !teclado.isKeyPressed("DOWN")){
             //Main.setDx(0);
             //Main.setDy(0);
-            if(jugador.getX() > 0){
-                jugador.setX( jugador.getX() -1);
-                jugador.setHitboxX( jugador.getHitboxX() -1);
+            if(jugador.getX()+bg.getBackgroundX() < 0){
+                jugador.setX( jugador.getX() -Camion.SPEED);
+                jugador.setHitboxX( jugador.getHitboxX() -Camion.SPEED);
             }
 
         }
@@ -431,21 +454,25 @@ public class Main extends Application {
            bg.paintBackground(gc);
            arrayEntidad.forEach(objeto->
            {
+               double objetoX = (objeto.getX()+bg.getBackgroundX() < 0 && !intro) ? 0:objeto.getX()+bg.getBackgroundX();
+
                if(objeto.getName()=="jugador") {
                    paintPlayer(gc,t);
                }
                else if(objeto.getName()=="basuraPlastico") {
-                   gc.drawImage(ImageLoader.spritePlastico,objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
+                   gc.drawImage(ImageLoader.spritePlastico,(intro)? objetoX:objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
                }
                else if (objeto.getName()=="camion") {
-                   gc.drawImage(ImageLoader.spriteCamion, objeto.getX(),objeto.getY(), objeto.getWidth(), objeto.getHeight());
+                   gc.drawImage(ImageLoader.spriteCamion, (intro)? objetoX:objeto.getX(),objeto.getY(), objeto.getWidth(), objeto.getHeight());
                }
                else if(objeto.getName()=="boteAzul") {
-                   gc.drawImage(ImageLoader.spriteBoteAzul,objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
+                   gc.drawImage(ImageLoader.spriteBoteAzul,(intro)? objetoX:objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
                }
            });
-
         }
+
+        showProgressBar(gc);
+
          if(stateGame==StateGame.gameOver)
         {
             texto.setText("Has perdido!!!!!!!!!!");
@@ -476,43 +503,51 @@ public class Main extends Application {
         }
     }
 
+    private void showProgressBar(GraphicsContext gc){
+        double progress = -bg.getBackgroundX()/64;
 
+        gc.setStroke(Color.BLACK);
+        gc.strokeRect(437,575,150,10);
+        gc.setFill(Color.WHITE);
 
+        double indicator = progress*2+437;
+        gc.fillRect( (indicator> 587? 587:indicator), 565,10,30);
+    }
 
     public void paintPlayer(GraphicsContext gc,double t)
     {
+        double playerX = (jugador.getX()+bg.getBackgroundX() < 0 && !intro) ? 0:jugador.getX()+bg.getBackgroundX();
+
         if (StatePlayer.abajo==jugador.getState()) {
-            if(dy!=0)gc.drawImage(ImageLoader. caminaAbajo.getFrame(t),jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
-            else gc.drawImage(ImageLoader.paradoAbajo,jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
+            if(dy!=0)gc.drawImage(ImageLoader. caminaAbajo.getFrame(t),(intro)? playerX:jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
+            else gc.drawImage(ImageLoader.paradoAbajo,(intro)? playerX:jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
         }
         else if(jugador.getState()==StatePlayer.arriba)
         {
-            if (dy!=0) gc.drawImage(ImageLoader.caminaArriba.getFrame(t),jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
-            else gc.drawImage(ImageLoader.paradoArriba,jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
+            if (dy!=0) gc.drawImage(ImageLoader.caminaArriba.getFrame(t),(intro)? playerX:jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
+            else gc.drawImage(ImageLoader.paradoArriba,(intro)? playerX:jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
         }
         else if(jugador.getState()==StatePlayer.derecha)
         {
             if (dx!=0) {
-                gc.drawImage(ImageLoader.caminaderecho.getFrame(t),jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
+                gc.drawImage(ImageLoader.caminaderecho.getFrame(t),(intro)? playerX:jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
 
             }
 
             else {
-                gc.drawImage(ImageLoader.paradoDerecho,jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
+                gc.drawImage(ImageLoader.paradoDerecho,(intro)? playerX:jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
             }
 
         }
         else if(jugador.getState()==StatePlayer.izquierda)
         {
             if(dx!=0) {
-                gc.drawImage(ImageLoader.caminaIzquierda.getFrame(t), jugador.getX(), jugador.getY(), jugador.getWidth(), jugador.getHeight());
+                gc.drawImage(ImageLoader.caminaIzquierda.getFrame(t), (intro)? playerX:jugador.getX(), jugador.getY(), jugador.getWidth(), jugador.getHeight());
             }
             else {
-                gc.drawImage(ImageLoader.paradoIzquierda,jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
+                gc.drawImage(ImageLoader.paradoIzquierda,(intro)? playerX:jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
             }
         }
-
-
     }
 
 

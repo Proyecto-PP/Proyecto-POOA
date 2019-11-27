@@ -7,6 +7,7 @@ public class Camion extends MovingIsoEntity {
 
     private int distance;
     private float gasolina=1000;
+    public static final int SPEED = 2;
 
     public Camion(String name, double x, double y, double width, double height, double hitboxSize) {
         super(name, x, y, width, height, hitboxSize);
@@ -29,7 +30,9 @@ public class Camion extends MovingIsoEntity {
     public void move() {
         if(gasolina>0)
         {
-            distance++;
+            distance += SPEED;
+            //setX( getX() +SPEED);
+            //(getHitboxX() +SPEED);
             gasolina -= 0.16 ;
             /*
             if(Main.getJugador().getX()+Main.getJugador().getWidth()>600&&Main.getDx()>0)
