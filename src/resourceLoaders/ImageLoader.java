@@ -27,6 +27,8 @@ public final class ImageLoader {
     public final static Image spriteBolaPapel =new Image("file:resources//sprites//objeto//bolaPapel.png");
     public final static Image spritePapelAvion =new Image("file:resources//sprites//objeto//papelAvion.png");
     public final static Image spriteFoco =new Image("file:resources//sprites//objeto//Foco.png");
+    public final static Image spriteBotellaRoto =new Image("file:resources//sprites//objeto//BotellaRoto.png");
+    public final static Image spriteVentanaRoto =new Image("file:resources//sprites//objeto//VidrioRoto.png");
 
     public final static Image spriteCamion=new Image("file:resources//sprites//objeto//Camion.png");
     public final static Image spriteBoteAzul= new Image("file:resources//sprites//objeto//BoteBasura.png");

@@ -16,7 +16,9 @@ import gameObjeto.basura.basuraPapel.BasuraPapelAvion;
 import gameObjeto.basura.basuraPapel.BasuraPeriodico;
 import gameObjeto.basura.basuraPlastico.BasuraBotella;
 import gameObjeto.basura.basuraPlastico.BasuraPlastico;
+import gameObjeto.basura.basuraVidrio.BasuraBotellaRoto;
 import gameObjeto.basura.basuraVidrio.BasuraFoco;
+import gameObjeto.basura.basuraVidrio.BasuraVentanaRoto;
 import gameObjeto.boteBasura.BoteBasura;
 import gameObjeto.boteBasura.BotePlastico;
 import javafx.animation.AnimationTimer;
@@ -480,6 +482,10 @@ public class Main extends Application {
                else if(objeto instanceof BasuraBolaPapel) gc.drawImage(ImageLoader.spriteBolaPapel,objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
                else if(objeto instanceof BasuraPapelAvion) gc.drawImage(ImageLoader.spritePapelAvion,objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
                else if(objeto instanceof BasuraFoco) gc.drawImage(ImageLoader.spriteFoco,objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
+               else if(objeto instanceof BasuraVentanaRoto) gc.drawImage(ImageLoader.spriteVentanaRoto,objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
+               else if(objeto instanceof BasuraBotellaRoto) gc.drawImage(ImageLoader.spriteBotellaRoto,objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
+
+
                else if (objeto instanceof Camion) gc.drawImage(ImageLoader.spriteCamion, objeto.getX(),objeto.getY(), objeto.getWidth(), objeto.getHeight());
                else if(objeto instanceof BoteBasura) gc.drawImage(ImageLoader.spriteBoteAzul,objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
            });
