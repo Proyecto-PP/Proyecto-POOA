@@ -220,7 +220,13 @@ public class Main extends Application {
 
         if(stateGame==StateGame.playing)
         {
-            bg.setBackgroundX( -camion.getDistance() );
+            if(bg.getBackgroundX() >= -bg.getGameBg().getWidth()+1024){
+                bg.setBackgroundX( -camion.getDistance() );
+            }
+            else{
+                setStateGame(StateGame.gameOver);
+            }
+
             Collections.sort(arrayEntidad, cmpArrayEntidad);    //Instancie el comparador en el initializeUtilities para que no se cree uno nuevo cada vez.
 
             texto.setText("EL puntaje es:"+puntaje+"                                   Gasolina:"+String.format("%.1f",camion.getGasolina()/10));
