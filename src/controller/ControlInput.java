@@ -8,6 +8,8 @@ public final class ControlInput {
 
     private static ArrayList<KeyCode> buttons;
     private static ArrayList<Boolean> buttonStatus;
+    private static boolean altButtonA;
+    private static boolean altButtonB;
 
     static {
         buttons = new ArrayList<>();
@@ -74,4 +76,19 @@ public final class ControlInput {
         return KeyCode.getKeyCode(normalizeString(keyCode));
     }
 
+    public static boolean isAltButtonA() {
+        return altButtonA;
+    }
+
+    public static void setAltButtonA(boolean altButtonA) {
+        ControlInput.altButtonA = altButtonA;
+    }
+
+    public static boolean isAltButtonB() {
+        return altButtonB;
+    }
+
+    public static void setAltButtonB(boolean altButtonB) {
+        ControlInput.altButtonB = altButtonB;
+    }
 }

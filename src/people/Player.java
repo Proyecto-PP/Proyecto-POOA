@@ -4,8 +4,6 @@ import entidades.MovingIsoEntity;
 import resourceLoaders.ImageLoader;
 import sample.Main;
 
-import java.awt.Image;
-
 public class Player extends MovingIsoEntity {
     private static int vida=3;
     public StatePlayer state;
@@ -13,8 +11,6 @@ public class Player extends MovingIsoEntity {
     private boolean ocupado;
 
     private boolean dashing;
-    private final double dashTime = 0.15; //seg
-    private double dashFrames;
 
     public static final double SPEED = 4;
 
@@ -68,11 +64,11 @@ public class Player extends MovingIsoEntity {
             setY(0);
             setHitboxY(0);
         }
-        else if(getX() + Main.getDx() > 1024- ImageLoader.paradoArriba.getWidth()){
+        else if(getX() + Main.getDx() > Main.WIDTH - ImageLoader.paradoArriba.getWidth()){
             setX(1024- ImageLoader.paradoArriba.getWidth());
             setHitboxX(1024- ImageLoader.paradoArriba.getWidth());
         }
-        else if(getY() + Main.getDy() > 600- ImageLoader.paradoArriba.getHeight()){
+        else if(getY() + Main.getDy() > Main.HEIGHT - ImageLoader.paradoArriba.getHeight()){
             setY(600 - ImageLoader.paradoArriba.getHeight());
             setHitboxY(600- ImageLoader.paradoArriba.getHeight());
         }
@@ -94,15 +90,4 @@ public class Player extends MovingIsoEntity {
         this.dashing = dashing;
     }
 
-    public double getDashTime() {
-        return dashTime;
-    }
-
-    public double getDashFrames() {
-        return dashFrames;
-    }
-
-    public void setDashFrames(double dashFrames) {
-        this.dashFrames = dashFrames;
-    }
 }

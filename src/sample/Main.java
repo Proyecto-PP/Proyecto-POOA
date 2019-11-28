@@ -66,8 +66,11 @@ public class Main extends Application {
     private static double dx;
     private static double dy;
     public static final double DASH_SPEED_MULT = 4;
+    private static int dashCooldown;        //En frames 60 frames - 1 seg
+    private final double maxDashFrames = 10; //En Frames
+    private double dashFrames;
 
-    private boolean intro = true;
+    private boolean intro = false;
     private boolean shift = false; //False = derecha
 
     private int puntaje;        //puntaje, como es un atributo de clase, se inicializa en 0 por default.
@@ -142,11 +145,13 @@ public class Main extends Application {
 
     //        Define propiedades basicas del stage.
     private void setupPrimaryStage(Stage primaryStage) {
-        //primaryStage.setAlwaysOnTop(true);        Esto es incomodo en la tablet, ya que no es facil mover la pantalla para ver otras ventanas por detras
         primaryStage.centerOnScreen();
         primaryStage.requestFocus();
         primaryStage.setTitle("Proyecto - PP");
-        primaryStage.setScene(escena);    //Uso una variable Scene para poder utilizar un teclado para pruebas.
+        primaryStage.setScene(escena);    //Uso una variable Scene para poder utilizar los listeners del teclado.
+        primaryStage.setResizable(false);
+        primaryStage.sizeToScene();
+
     }
 
     private void initializeControls() {
@@ -161,7 +166,7 @@ public class Main extends Application {
     private void initializeGroup() {
         //Aqui va la configuracion inicial del grupo y escena
         grupo = new Group();
-        escena = new Scene(grupo);
+        escena = new Scene(grupo, WIDTH, HEIGHT);
     }
 
     private void initializeCanvas() {
@@ -170,7 +175,7 @@ public class Main extends Application {
     }
 
     private void initializeReproductor() {
-        reproductor = new MusicPlayer(AudioLoader.persona5Song);
+        reproductor = new MusicPlayer(AudioLoader.muteCity);
         reproductor.setVolume(0);
     }
 
@@ -192,18 +197,7 @@ public class Main extends Application {
         cmpArrayEntidad = new Comparator<Entity>() {
             @Override
             public int compare(Entity o1, Entity o2) {
-                if(o1.getY()+o1.getHeight()> o2.getY()+o2.getHeight())
-                {
-                    return 1;
-                }
-                else if(o1.getY()+o1.getHeight()== o2.getY()+o2.getHeight())
-                {
-                    return 0;
-                }
-                else
-                {
-                    return -1;
-                }
+                return Double.compare(o1.getY() + o1.getHeight(), o2.getY() + o2.getHeight());
             }
         };
     }
@@ -233,7 +227,7 @@ public class Main extends Application {
 
         if(stateGame==StateGame.playing)
         {
-            if(bg.getBackgroundX() >= -bg.getGameBg().getWidth()+1024){
+            if(bg.getBackgroundX() >= -bg.getGameBg().getWidth() + WIDTH){
                 bg.setBackgroundX( -camion.getDistance() );
             }
             else{
@@ -249,7 +243,6 @@ public class Main extends Application {
 
             arrayBasura.getArrayBasura().forEach(basura -> {
 
-
                 //collision de basura y jugador para agarra la basura
                 if (basura.nextTo(jugador.getX(), jugador.getY(), jugador.getWidth(), jugador.getHeight()) == 1) {
                     basura.setNextToPlayer(true);
@@ -257,17 +250,7 @@ public class Main extends Application {
                     basura.setNextToPlayer(false);
                 }
 
-                // si el camion esta chocando a una basura se agrega esa basura a la lista de elimina
-                if (basura.collisionsWith(camion.getX(), camion.getY(), camion.getWidth(), camion.getHeight()) == 1) {
-                    //Si la basura colisiono por que la cargaba el jugador:
-                    if (basura.isMoving()) {
-                        //El jugador deja de estar cargando esa basura.
-                        jugador.setOcupado(false);
-                    }
-                    remove.add(basura);
-
-                    //Por cierto, no deberiamos quitar esto ya que ya tenemos el bote azul?
-                }
+                //Elimine la parte del codigo que eliminaba las basuras cuando chocaban con el camion.
 
                 //collision con para sacar puntaje
                 if (basura.isMoving()) {
@@ -289,13 +272,15 @@ public class Main extends Application {
                     //Entonces su cambio en x y y se vuelven 0
                     dx=0;
                     dy=0;
+
+                    jugador.setDashing(false);
+                } else {
+                    basura.move();
                 }
 
-                //Y solo es despues de todas estas comprobaciones que se mueve la basura.
-                basura.move();
-
             });
-            //collision de jugador con el
+
+            //Si el jugador colisiona con el camion...
             if(camion.collisionsWith(jugador.getHitboxX()+dx,jugador.getHitboxY()+dy,jugador.getHitboxWidth(),jugador.getHitboxHeight())==1)
             {
                 dx=0;
@@ -303,8 +288,18 @@ public class Main extends Application {
 
                 jugador.setDashing(false);
 
-                //Hay problemas con esto, por que si el camion te atraviesa mientras avanza por su cuenta, tu dejas de poder
-                //moverte completamente.
+                //Si el jugador NO esta en frente del camion:
+                if( !(jugador.getHitboxX() > camion.getHitboxX() &&
+                      jugador.getHitboxY() + jugador.getHitboxHeight() > camion.getHitboxY() &&
+                      jugador.getHitboxY() < camion.getHitboxY() + camion.getHitboxHeight()) ) {
+
+                    //Que se mueva el camion aunque este colisionando con el.
+                    camion.move();
+                    boteAzul.move();
+                }
+            } else {
+                camion.move();
+                boteAzul.move();
             }
 
             //Lista de elimianr (si es size de la lista eliminar se elimina)
@@ -314,12 +309,14 @@ public class Main extends Application {
                 arrayEntidad.removeAll(remove);
                 //Faltaba poner que se limpiara cada vez que eliminaba los objetos que hacia falta eliminar.
                 remove.clear();
-
-                //Quite lo de jugador.setOcupado por que habia basura que se encontraba en el camino del camion, chocaba,
-                //se mandaba a eliminar y nunca estuvo en las manos del jugador.
             }
+
+            //Esto debe ir al ultimo por que se deben realizar todas las validaciones antes de darle permiso de cambiar
+            //su posicion.
+            jugador.move();
             //fin de juego
         }
+
         if(camion.getGasolina()<0)
         {
             setStateGame(StateGame.gameOver);
@@ -329,12 +326,6 @@ public class Main extends Application {
             texto.setText("perdimos");
         }
 
-
-        //Los movimientos deberian hacerse todos al ultimo para darle tiempo al programa de procesar que es lo que debe
-        //hacer tomando en cuenta el estado actual del juego (y no me refiero a los states).
-        camion.move();
-        jugador.move();
-        boteAzul.move();
 
 
     }
@@ -357,50 +348,53 @@ public class Main extends Application {
 
     private void updatePlayerMovement() {
 
-        //Lo uso unicamente para el teclado.
-        //Si lo ponia de forma independiente o en otro thread, lo que pasaba es que podia brincarse las verificaciones
-        //que haciamos para colisiones y los botones.
+        //Tanto el touch como el teclado comparten funcionamiento, y se realizan cambios segun lo que se tenga presionado
+        //en este metodo.
 
         if(!jugador.isDashing()) {
-            if (ControlInput.isButtonPressed("Up") && !ControlInput.isButtonPressed("DOWN")) {
+
+            System.out.println("NYEEH");
+
+            if (ControlInput.isButtonPressed("UP") && !ControlInput.isButtonPressed("DOWN")) {
                 Main.setDx(0);
-                Main.setDy(-2);
+                Main.setDy(-Player.SPEED);
 
                 Main.getJugador().setState(StatePlayer.arriba);
             }
 
             if (ControlInput.isButtonPressed("DOWN") && !ControlInput.isButtonPressed("UP")) {
                 Main.setDx(0);
-                Main.setDy(2);
+                Main.setDy(Player.SPEED);
 
                 Main.getJugador().setState(StatePlayer.abajo);
             }
 
             if (ControlInput.isButtonPressed("RIGHT") && !ControlInput.isButtonPressed("LEFT")) {
-                Main.setDx(2);
+                Main.setDx(Player.SPEED);
                 Main.setDy(0);
 
+
                 if (ControlInput.isButtonPressed("UP")) {
-                    Main.setDx(1.42);
-                    Main.setDy(-1.42);
+                    Main.setDx(Player.SPEED / 2);
+                    Main.setDy(-Player.SPEED / 2);
                 } else if (ControlInput.isButtonPressed("DOWN")) {
-                    Main.setDx(1.42);
-                    Main.setDy(1.42);
+                    Main.setDx(Player.SPEED / 2);
+                    Main.setDy(Player.SPEED / 2);
                 }
 
                 Main.getJugador().setState(StatePlayer.derecha);
             }
 
             if (ControlInput.isButtonPressed("LEFT") && !ControlInput.isButtonPressed("RIGHT")) {
-                Main.setDx(-2);
+                Main.setDx(-Player.SPEED);
                 Main.setDy(0);
 
                 if (ControlInput.isButtonPressed("UP")) {
-                    Main.setDx(-1.42);
-                    Main.setDy(-1.42);
+                    Main.setDx(-Player.SPEED / 2);
+                    Main.setDy(-Player.SPEED / 2);
                 } else if (ControlInput.isButtonPressed("DOWN")) {
-                    Main.setDx(-1.42);
-                    Main.setDy(1.42);
+                    Main.setDx(-Player.SPEED / 2);
+                    Main.setDy(Player.SPEED / 2);
                 }
 
                 Main.getJugador().setState(StatePlayer.izquierda);
@@ -410,11 +404,11 @@ public class Main extends Application {
                 Main.setDx(0);
 
                 if (ControlInput.isButtonPressed("UP")) {
-                    Main.setDy(-2);
+                    Main.setDy(-Player.SPEED);
 
                     Main.getJugador().setState(StatePlayer.arriba);
                 } else if (ControlInput.isButtonPressed("DOWN")) {
-                    Main.setDy(2);
+                    Main.setDy(Player.SPEED);
 
                     Main.getJugador().setState(StatePlayer.abajo);
                 } else {
@@ -426,11 +420,11 @@ public class Main extends Application {
                 Main.setDy(0);
 
                 if (ControlInput.isButtonPressed("RIGHT")) {
-                    Main.setDx(2);
+                    Main.setDx(Player.SPEED);
 
                     Main.getJugador().setState(StatePlayer.derecha);
                 } else if (ControlInput.isButtonPressed("LEFT")) {
-                    Main.setDx(-2);
+                    Main.setDx(-Player.SPEED);
 
                     Main.getJugador().setState(StatePlayer.izquierda);
                 } else {
@@ -438,60 +432,84 @@ public class Main extends Application {
                 }
             }
 
-            if (!ControlInput.isButtonPressed("UP") && !ControlInput.isButtonPressed("DOWN") &&
-                    !ControlInput.isButtonPressed("LEFT") && !ControlInput.isButtonPressed("RIGHT")) {
-
+            if (!ControlInput.isButtonPressed("LEFT") && !ControlInput.isButtonPressed("RIGHT") &&
+                    !ControlInput.isButtonPressed("UP") && !ControlInput.isButtonPressed("DOWN")) {
                 Main.setDx(0);
                 Main.setDy(0);
-            }
-
-            //Esto no funciona bien, no se alarmen
-            if (ControlInput.isButtonPressed("S")) {
-                if (!Main.getJugador().isOcupado()) {
-                    for (Basura basura :
-                            Main.getArrayBasura().getArrayBasura()) {
-                        if (basura.isNextToPlayer()) {
-                            basura.setMoving(true);
-
-                            Main.getJugador().setOcupado(true);
-                        }
-                    }
-                } else if (Main.getJugador().isOcupado()) {
-
-                    //Deberia hacerse en release de alguna forma, recuerda que se hacen varios press si lo dejas presionado.
-                    //Esto no funciona bien
-                    for (Basura basura :
-                            Main.getArrayBasura().getArrayBasura()) {
-                        if (basura.isMoving()) {
-                            basura.setMoving(false);
-                            Main.getJugador().setOcupado(false);
-                        }
-                    }
+                if (jugador.getX() + bg.getBackgroundX() < 0) {
+                    jugador.setX(jugador.getX() - Camion.SPEED);
+                    jugador.setHitboxX(jugador.getHitboxX() - Camion.SPEED);
                 }
+
             }
 
+
+            //Esto es para agarrar y soltar basura
+            if (ControlInput.isButtonPressed("S")) {
+
+                if (!ControlInput.isAltButtonA()) {
+                    if (!Main.getJugador().isOcupado()) {
+
+                        for (Basura basura :
+                                Main.getArrayBasura().getArrayBasura()) {
+                            if (basura.isNextToPlayer() && !jugador.isOcupado()) {      //Mas de una basura se podia mover
+                                jugador.setOcupado(true);                               //por que no consideramos que el jugador
+                                basura.setMoving(true);                                 //podia volverse ocupado dentro de este mismo
+                            }                                                           //ciclo.
+                        }
+                    } else {
+
+                        for (Basura basura :
+                                Main.getArrayBasura().getArrayBasura()) {
+                            if (basura.isMoving() && jugador.isOcupado()) {
+                                jugador.setOcupado(false);
+                                basura.setMoving(false);
+                            }
+                        }
+                    }
+
+                    ControlInput.setAltButtonA(true);   //Es un switch, para saber si soltaron o no la tecla.
+                }
+
+            } else {
+                ControlInput.setAltButtonA(false);
+            }
+
+
+            //Este es el dash
             if (ControlInput.isButtonPressed("D")) {
-                if(dx != 0 || dy != 0)      //Si se está moviendo hacia alguna direccion.
+                if ((dx != 0 || dy != 0) && !ControlInput.isAltButtonB() && dashCooldown == 0) {     //Si se está moviendo hacia alguna direccion.
                     jugador.setDashing(true);
+                    ControlInput.setAltButtonB(true);
+                }
+            } else {        //Necesitamos que pueda realizar su funcionalidad UNA vez hasta que lo vuelva a presionar.
+                //Con esto lo que hago es obligar al usuario a levantar el dedo de la tecla, y solo despues
+                //de que lo haga es que puede volver a utilizar el boton. Lo mismo con el de arriba.
+                ControlInput.setAltButtonB(false);
             }
 
+            if (dashCooldown > 0) {      //Contador para evitar que hagan dash seguidos.
+                dashCooldown--;
+            }
 
         } else {
 
-            //Si el jugador está haciendo un dash
+            //Si el jugador está haciendo un dash no deberia de poder moverse por en medio.
 
-            if(jugador.getDashFrames() != jugador.getDashTime()*60 ) {
-                if(jugador.getDashFrames() == 0) {
+            //Se usa un contador para saber cuanto tiempo estara en el estado del dash. Y hasta que no llegue
+            //a un limite [maxDashFrames] se suma 1 a ese contador. Cuando dashFrames llega a maxDashFrames, se saca
+            //al jugador del estado de "dashing" y se ponen 60 frames [1 segundo] de cooldown al dash.
+            if(dashFrames != maxDashFrames) {
+                if(dashFrames == 0) {
                     dx = dx * DASH_SPEED_MULT;
                     dy = dy * DASH_SPEED_MULT;
                 }
-                jugador.setDashFrames(jugador.getDashFrames() + 1);
+                dashFrames++;
             } else {
                 jugador.setDashing(false);
-                jugador.setDashFrames(0);
+                dashFrames = 0;
+                dashCooldown = 60;     //son 60 frames - 1 seg
             }
-
-
         }
 
     }
@@ -543,10 +561,6 @@ public class Main extends Application {
         if(stateGame==StateGame.playing)
         {
             grupo.getChildren().addAll(botonA, botonB, dpad, texto);
-
-            //Temp
-            //escena.setOnKeyPressed(keyboardListener);
-
         }
 
         //else if? switch tal vez para cuando tengamos mas?
@@ -566,7 +580,6 @@ public class Main extends Application {
         double indicator = progress*2+437;
         gc.fillRect( (indicator> 587? 587:indicator), 565,10,30);
     }
-
 
     public void paintPlayer(GraphicsContext gc,double t)
     {
@@ -602,8 +615,6 @@ public class Main extends Application {
                 gc.drawImage(ImageLoader.paradoIzquierda,(intro)? playerX:jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
             }
         }
-
-
     }
 
 
