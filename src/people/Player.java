@@ -12,6 +12,10 @@ public class Player extends MovingIsoEntity {
     private boolean colisionado;
     private boolean ocupado;
 
+    private boolean dashing;
+    private final double dashTime = 0.15; //seg
+    private double dashFrames;
+
     public static final double SPEED = 4;
 
     public Player(String name, double x, double y, double width, double height, double hitboxSize) {
@@ -21,8 +25,8 @@ public class Player extends MovingIsoEntity {
         ocupado=false;
     }
 
-    public Player(String name, double x, double y, double width, double height, double hitboxX, double hitboxY, double hitboxWidth, double hitboxHeight) {
-        super(name, x, y, width, height, hitboxX, hitboxY, hitboxWidth, hitboxHeight);
+    public Player( double x, double y, double width, double height, double hitboxX, double hitboxY, double hitboxWidth, double hitboxHeight) {
+        super( x, y, width, height, hitboxX, hitboxY, hitboxWidth, hitboxHeight);
         state=StatePlayer.abajo;
         colisionado=false;
         ocupado=false;
@@ -78,5 +82,27 @@ public class Player extends MovingIsoEntity {
             setHitboxX(getHitboxX() + Main.getDx());
             setHitboxY(getHitboxY() + Main.getDy());
         }
+
+    }
+
+
+    public boolean isDashing() {
+        return dashing;
+    }
+
+    public void setDashing(boolean dashing) {
+        this.dashing = dashing;
+    }
+
+    public double getDashTime() {
+        return dashTime;
+    }
+
+    public double getDashFrames() {
+        return dashFrames;
+    }
+
+    public void setDashFrames(double dashFrames) {
+        this.dashFrames = dashFrames;
     }
 }

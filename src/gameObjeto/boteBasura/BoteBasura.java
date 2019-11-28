@@ -1,17 +1,16 @@
-package gameObjeto;
+package gameObjeto.boteBasura;
 
-import entidades.IsometricEntity;
 import entidades.MovingIsoEntity;
 import sample.Main;
 
-public class BoteAzul extends MovingIsoEntity {
+public abstract class BoteBasura extends MovingIsoEntity {
 
-    public BoteAzul(String name, double x, double y, double width, double height, double hitboxSize) {
-        super(name, x, y, width, height, hitboxSize);
+    public BoteBasura(double x, double y, double width, double height, double hitboxSize) {
+        super( x, y, width, height, hitboxSize);
     }
 
-    public BoteAzul(String name, double x, double y, double width, double height, double hitboxX, double hitboxY, double hitboxWidth, double hitboxHeight) {
-        super(name, x, y, width, height, hitboxX, hitboxY, hitboxWidth, hitboxHeight);
+    public BoteBasura(double x, double y, double width, double height, double hitboxX, double hitboxY, double hitboxWidth, double hitboxHeight) {
+        super(x, y, width, height, hitboxX, hitboxY, hitboxWidth, hitboxHeight);
     }
 
     @Override

@@ -97,6 +97,13 @@ animation timer
     i++
 }
 
+
+4 * 2^-(2t)
+
+hace que avance 4 en t = 0 y si pones una condicion de parada en t = 1
+entonces va de 4 a 2 en 1 segundo, avanzando por en medio con esa propulsion.
+
+
 en el dpad no lo dejas mover si dashing = true
 
 

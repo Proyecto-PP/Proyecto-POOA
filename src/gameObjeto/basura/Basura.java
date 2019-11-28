@@ -1,20 +1,20 @@
-package gameObjeto;
+package gameObjeto.basura;
 
 import entidades.MovingIsoEntity;
 import sample.Main;
 
-public class Basura extends MovingIsoEntity {
+public abstract class Basura extends MovingIsoEntity {
     private boolean nextToPlayer;
     private boolean moving;
 
-    public Basura(String name, double x, double y, double width, double height, double hitboxSize) {
-        super(name, x, y, width, height, hitboxSize);
+    public Basura( double x, double y, double width, double height, double hitboxSize) {
+        super( x, y, width, height, hitboxSize);
         moving=false;
         nextToPlayer =false;
     }
 
-    public Basura(String name, double x, double y, double width, double height, double hitboxX, double hitboxY, double hitboxWidth, double hitboxHeight) {
-        super(name, x, y, width, height, hitboxX, hitboxY, hitboxWidth, hitboxHeight);
+    public Basura( double x, double y, double width, double height, double hitboxX, double hitboxY, double hitboxWidth, double hitboxHeight) {
+        super( x, y, width, height, hitboxX, hitboxY, hitboxWidth, hitboxHeight);
         moving=false;
         nextToPlayer =false;
     }

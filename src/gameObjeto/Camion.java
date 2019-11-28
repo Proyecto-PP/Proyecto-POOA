@@ -14,8 +14,8 @@ public class Camion extends MovingIsoEntity {
         distance = 0;
     }
 
-    public Camion(String name, double x, double y, double width, double height, double hitboxX, double hitboxY, double hitboxWidth, double hitboxHeight) {
-        super(name, x, y, width, height, hitboxX, hitboxY, hitboxWidth, hitboxHeight);
+    public Camion( double x, double y, double width, double height, double hitboxX, double hitboxY, double hitboxWidth, double hitboxHeight) {
+        super( x, y, width, height, hitboxX, hitboxY, hitboxWidth, hitboxHeight);
     }
 
     public float getGasolina() {

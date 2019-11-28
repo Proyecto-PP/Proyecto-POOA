@@ -1,15 +1,26 @@
 package sample;
 
 import botones.Button;
-import controller.KeyboardControl;
-import controller.TouchControl;
+import controller.ControlInput;
+import controller.ControlsSetup;
 
 import display.Background;
 import entidades.Entity;
-import gameObjeto.ArrayBasura;
-import gameObjeto.Basura;
-import gameObjeto.BoteAzul;
-import gameObjeto.Camion;
+import gameObjeto.*;
+import gameObjeto.basura.Basura;
+import gameObjeto.basura.basuraOrganica.BasuraBanana;
+import gameObjeto.basura.basuraOrganica.BasuraManzana;
+import gameObjeto.basura.basuraOrganica.BasuraSandia;
+import gameObjeto.basura.basuraPapel.BasuraBolaPapel;
+import gameObjeto.basura.basuraPapel.BasuraPapelAvion;
+import gameObjeto.basura.basuraPapel.BasuraPeriodico;
+import gameObjeto.basura.basuraPlastico.BasuraBotella;
+import gameObjeto.basura.basuraPlastico.BasuraPlastico;
+import gameObjeto.basura.basuraVidrio.BasuraBotellaRoto;
+import gameObjeto.basura.basuraVidrio.BasuraFoco;
+import gameObjeto.basura.basuraVidrio.BasuraVentanaRoto;
+import gameObjeto.boteBasura.BoteBasura;
+import gameObjeto.boteBasura.BotePlastico;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.scene.Group;
@@ -54,6 +65,7 @@ public class Main extends Application {
 
     private static double dx;
     private static double dy;
+    public static final double DASH_SPEED_MULT = 4;
 
     private boolean intro = true;
     private boolean shift = false; //False = derecha
@@ -67,9 +79,9 @@ public class Main extends Application {
     *  te libras de cosas redundantes como Main.getArrayBasura().getArrayBasura(); [TouchControl : 32]
     */
     private static ArrayBasura arrayBasura = new ArrayBasura();
-    private static Player jugador = new Player("jugador", 100, 100, 32, 48, 0.5);
-    private static Camion camion = new Camion("camion", 100, 200, 200, 100, 0.5);
-    private static BoteAzul boteAzul = new BoteAzul("boteAzul", 50, 250, 50, 50, 1);
+    private static Player jugador = new Player( 100, 100, 32, 48, 0.5);
+    private static Camion camion = new Camion(100, 200, 200, 100, 0.5);
+    private static BotePlastico boteAzul = new BotePlastico( 50, 250, 50, 50, 1);
     Iterator<Basura> array = arrayBasura.getArrayBasura().iterator();
     List<Basura> remove = new ArrayList();
     private ArrayList<Entity> arrayEntidad;
@@ -80,8 +92,8 @@ public class Main extends Application {
 
     @Override
     public void init() throws Exception {
-
         stateGame = StateGame.playing;
+
         initializeGroup();
         initializeControls();
         initializeCanvas();
@@ -96,13 +108,11 @@ public class Main extends Application {
 
         addComponet();
 
-
     }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         setupPrimaryStage(primaryStage);
-
 
         new AnimationTimer() {
             @Override
@@ -119,11 +129,11 @@ public class Main extends Application {
             }
         }.start();
 
-        //reproductor.fadeInPlay(1);
+        reproductor.fadeInPlay(1);
 
         primaryStage.show();
-
     }
+
 
 
     ////////////////////////////////////////////
@@ -140,11 +150,11 @@ public class Main extends Application {
     }
 
     private void initializeControls() {
-        botonA = TouchControl.getBotonA();
-        botonB = TouchControl.getBotonB();
-        dpad = TouchControl.getDpad();
+        botonA = ControlsSetup.getBotonA();
+        botonB = ControlsSetup.getBotonB();
+        dpad = ControlsSetup.getDpad();
 
-        teclado = KeyboardControl.getTeclado();
+        teclado = ControlsSetup.getTeclado();
         teclado.setKeyboardOnScene(escena);
     }
 
@@ -160,7 +170,7 @@ public class Main extends Application {
     }
 
     private void initializeReproductor() {
-        reproductor = new MusicPlayer(AudioLoader.niwaYumeGaAru);
+        reproductor = new MusicPlayer(AudioLoader.persona5Song);
         reproductor.setVolume(0);
     }
 
@@ -261,11 +271,15 @@ public class Main extends Application {
 
                 //collision con para sacar puntaje
                 if (basura.isMoving()) {
+                    //si el jugador llevando una basura y conllisiona con el bote plastico
                     if (jugador.collisionsWith(boteAzul.getX(), boteAzul.getY(), boteAzul.getWidth(), boteAzul.getHeight()) == 1) {
-                        remove.add(basura);
-                        camion.setGasolina(camion.getGasolina() + 30);
-                        puntaje++;
-                        jugador.setOcupado(false);
+                        if(basura instanceof BasuraPlastico)
+                        {   // si la basura que lleva es plastico obtenr punto y gasolina
+                            accionCollisionBoteObtenerPunto(basura);
+                        }
+                        else
+                            // si l a basura no es plastico se pierde punto y gasolina
+                            accionCollisionBotePierdePunto(basura);
                     }
                 }
 
@@ -286,6 +300,8 @@ public class Main extends Application {
             {
                 dx=0;
                 dy=0;
+
+                jugador.setDashing(false);
 
                 //Hay problemas con esto, por que si el camion te atraviesa mientras avanza por su cuenta, tu dejas de poder
                 //moverte completamente.
@@ -323,133 +339,158 @@ public class Main extends Application {
 
     }
 
+    private void accionCollisionBoteObtenerPunto(Basura basura)
+    {
+        remove.add(basura);
+        camion.setGasolina(camion.getGasolina() + 30);
+        puntaje++;
+        jugador.setOcupado(false);
+    }
+
+    private void accionCollisionBotePierdePunto(Basura basura)
+    {
+        remove.add(basura);
+        camion.setGasolina(camion.getGasolina() - 30);
+        puntaje--;
+        jugador.setOcupado(false);
+    }
+
     private void updatePlayerMovement() {
 
         //Lo uso unicamente para el teclado.
         //Si lo ponia de forma independiente o en otro thread, lo que pasaba es que podia brincarse las verificaciones
         //que haciamos para colisiones y los botones.
 
-        if(teclado.isKeyPressed("UP") && !teclado.isKeyPressed("DOWN") ) {
-            Main.setDx(0);
-            Main.setDy(-Player.SPEED);
-
-            Main.getJugador().setState(StatePlayer.arriba);
-        }
-
-        if(teclado.isKeyPressed("DOWN")  && !teclado.isKeyPressed("UP") ) {
-            Main.setDx(0);
-            Main.setDy(Player.SPEED);
-
-            Main.getJugador().setState(StatePlayer.abajo);
-        }
-
-        if(teclado.isKeyPressed("RIGHT") && !teclado.isKeyPressed("LEFT")) {
-            Main.setDx(Player.SPEED);
-            Main.setDy(0);
-
-
-            if(teclado.isKeyPressed("UP")) {
-                Main.setDx(Player.SPEED/2);
-                Main.setDy(-Player.SPEED/2);
-            } else if(teclado.isKeyPressed("DOWN")) {
-                Main.setDx(Player.SPEED/2);
-                Main.setDy(Player.SPEED/2);
-            }
-
-            Main.getJugador().setState(StatePlayer.derecha);
-        }
-
-        if(teclado.isKeyPressed("LEFT") && !teclado.isKeyPressed("RIGHT")) {
-            Main.setDx(-Player.SPEED);
-            Main.setDy(0);
-
-            if(teclado.isKeyPressed("UP")) {
-                Main.setDx(-Player.SPEED/2);
-                Main.setDy(-Player.SPEED/2);
-            } else if(teclado.isKeyPressed("DOWN")) {
-                Main.setDx(-Player.SPEED/2);
-                Main.setDy(Player.SPEED/2);
-            }
-
-            Main.getJugador().setState(StatePlayer.izquierda);
-        }
-
-        if(teclado.isKeyPressed("RIGHT") && teclado.isKeyPressed("LEFT")) {
-            Main.setDx(0);
-
-            if(teclado.isKeyPressed("UP")) {
-                Main.setDy(-Player.SPEED);
+        if(!jugador.isDashing()) {
+            if (ControlInput.isButtonPressed("Up") && !ControlInput.isButtonPressed("DOWN")) {
+                Main.setDx(0);
+                Main.setDy(-2);
 
                 Main.getJugador().setState(StatePlayer.arriba);
-            } else if(teclado.isKeyPressed("DOWN")){
-                Main.setDy(Player.SPEED);
+            }
+
+            if (ControlInput.isButtonPressed("DOWN") && !ControlInput.isButtonPressed("UP")) {
+                Main.setDx(0);
+                Main.setDy(2);
 
                 Main.getJugador().setState(StatePlayer.abajo);
-            } else {
-                Main.setDy(0);
             }
-        }
 
-        if(teclado.isKeyPressed("UP") && teclado.isKeyPressed("DOWN") ){
-            Main.setDy(0);
+            if (ControlInput.isButtonPressed("RIGHT") && !ControlInput.isButtonPressed("LEFT")) {
+                Main.setDx(2);
+                Main.setDy(0);
 
-            if(teclado.isKeyPressed("RIGHT")) {
-                Main.setDx(Player.SPEED);
+                if (ControlInput.isButtonPressed("UP")) {
+                    Main.setDx(1.42);
+                    Main.setDy(-1.42);
+                } else if (ControlInput.isButtonPressed("DOWN")) {
+                    Main.setDx(1.42);
+                    Main.setDy(1.42);
+                }
 
                 Main.getJugador().setState(StatePlayer.derecha);
-            } else if(teclado.isKeyPressed("LEFT")){
-                Main.setDx(-Player.SPEED);
+            }
+
+            if (ControlInput.isButtonPressed("LEFT") && !ControlInput.isButtonPressed("RIGHT")) {
+                Main.setDx(-2);
+                Main.setDy(0);
+
+                if (ControlInput.isButtonPressed("UP")) {
+                    Main.setDx(-1.42);
+                    Main.setDy(-1.42);
+                } else if (ControlInput.isButtonPressed("DOWN")) {
+                    Main.setDx(-1.42);
+                    Main.setDy(1.42);
+                }
 
                 Main.getJugador().setState(StatePlayer.izquierda);
-            }else {
+            }
+
+            if (ControlInput.isButtonPressed("RIGHT") && ControlInput.isButtonPressed("LEFT")) {
                 Main.setDx(0);
+
+                if (ControlInput.isButtonPressed("UP")) {
+                    Main.setDy(-2);
+
+                    Main.getJugador().setState(StatePlayer.arriba);
+                } else if (ControlInput.isButtonPressed("DOWN")) {
+                    Main.setDy(2);
+
+                    Main.getJugador().setState(StatePlayer.abajo);
+                } else {
+                    Main.setDy(0);
+                }
             }
-        }
 
-        if(!teclado.isKeyPressed("UP") && !teclado.isKeyPressed("DOWN") &&
-           !teclado.isKeyPressed("LEFT") && !teclado.isKeyPressed("RIGHT") ) {
+            if (ControlInput.isButtonPressed("UP") && ControlInput.isButtonPressed("DOWN")) {
+                Main.setDy(0);
 
-            Main.setDx(0);
-            Main.setDy(0);
-        }
+                if (ControlInput.isButtonPressed("RIGHT")) {
+                    Main.setDx(2);
 
-        if(teclado.isKeyPressed("A")) {
-            if(!Main.getJugador().isOcupado())
-            {
-                for (Basura basura:
-                        Main.getArrayBasura().getArrayBasura()) {
-                    if(basura.isNextToPlayer())
-                    {
-                        basura.setMoving(true);
+                    Main.getJugador().setState(StatePlayer.derecha);
+                } else if (ControlInput.isButtonPressed("LEFT")) {
+                    Main.setDx(-2);
 
-                        Main.getJugador().setOcupado(true);
+                    Main.getJugador().setState(StatePlayer.izquierda);
+                } else {
+                    Main.setDx(0);
+                }
+            }
+
+            if (!ControlInput.isButtonPressed("UP") && !ControlInput.isButtonPressed("DOWN") &&
+                    !ControlInput.isButtonPressed("LEFT") && !ControlInput.isButtonPressed("RIGHT")) {
+
+                Main.setDx(0);
+                Main.setDy(0);
+            }
+
+            //Esto no funciona bien, no se alarmen
+            if (ControlInput.isButtonPressed("S")) {
+                if (!Main.getJugador().isOcupado()) {
+                    for (Basura basura :
+                            Main.getArrayBasura().getArrayBasura()) {
+                        if (basura.isNextToPlayer()) {
+                            basura.setMoving(true);
+
+                            Main.getJugador().setOcupado(true);
+                        }
+                    }
+                } else if (Main.getJugador().isOcupado()) {
+
+                    //Deberia hacerse en release de alguna forma, recuerda que se hacen varios press si lo dejas presionado.
+                    //Esto no funciona bien
+                    for (Basura basura :
+                            Main.getArrayBasura().getArrayBasura()) {
+                        if (basura.isMoving()) {
+                            basura.setMoving(false);
+                            Main.getJugador().setOcupado(false);
+                        }
                     }
                 }
             }
-        }
 
-        if(teclado.isKeyPressed("S")) {
-            if(Main.getJugador().isOcupado())
-            {
-                for (Basura basura:
-                        Main.getArrayBasura().getArrayBasura()){
-                    if(basura.isMoving())
-                    {
-                        basura.setMoving(false);
-                        getJugador().setOcupado(false);
-                    }
+            if (ControlInput.isButtonPressed("D")) {
+                if(dx != 0 || dy != 0)      //Si se está moviendo hacia alguna direccion.
+                    jugador.setDashing(true);
+            }
+
+
+        } else {
+
+            //Si el jugador está haciendo un dash
+
+            if(jugador.getDashFrames() != jugador.getDashTime()*60 ) {
+                if(jugador.getDashFrames() == 0) {
+                    dx = dx * DASH_SPEED_MULT;
+                    dy = dy * DASH_SPEED_MULT;
                 }
+                jugador.setDashFrames(jugador.getDashFrames() + 1);
+            } else {
+                jugador.setDashing(false);
+                jugador.setDashFrames(0);
             }
-        }
 
-        if( !teclado.isKeyPressed("LEFT") && !teclado.isKeyPressed("RIGHT")
-                && !teclado.isKeyPressed("UP") && !teclado.isKeyPressed("DOWN")){
-            //Main.setDx(0);
-            //Main.setDy(0);
-            if(jugador.getX()+bg.getBackgroundX() < 0){
-                jugador.setX( jugador.getX() -Camion.SPEED);
-                jugador.setHitboxX( jugador.getHitboxX() -Camion.SPEED);
-            }
 
         }
 
@@ -465,18 +506,21 @@ public class Main extends Application {
            {
                double objetoX = (objeto.getX()+bg.getBackgroundX() < 0 && !intro) ? 0:objeto.getX()+bg.getBackgroundX();
 
-               if(objeto.getName()=="jugador") {
-                   paintPlayer(gc,t);
-               }
-               else if(objeto.getName()=="basuraPlastico") {
-                   gc.drawImage(ImageLoader.spritePlastico,(intro)? objetoX:objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
-               }
-               else if (objeto.getName()=="camion") {
-                   gc.drawImage(ImageLoader.spriteCamion, (intro)? objetoX:objeto.getX(),objeto.getY(), objeto.getWidth(), objeto.getHeight());
-               }
-               else if(objeto.getName()=="boteAzul") {
-                   gc.drawImage(ImageLoader.spriteBoteAzul,(intro)? objetoX:objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
-               }
+               if(objeto instanceof Player) paintPlayer(gc,t);
+               else if(objeto instanceof BasuraBotella) gc.drawImage(ImageLoader.spritePlastico,(intro)? objetoX:objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
+               else if(objeto instanceof BasuraManzana) gc.drawImage(ImageLoader.spriteManzana,(intro)? objetoX:objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
+               else if(objeto instanceof BasuraPeriodico) gc.drawImage(ImageLoader.spritePeriodico,(intro)? objetoX:objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
+               else if(objeto instanceof BasuraBanana) gc.drawImage(ImageLoader.spriteBanana,(intro)? objetoX:objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
+               else if(objeto instanceof BasuraSandia) gc.drawImage(ImageLoader.spriteSandia,(intro)? objetoX:objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
+               else if(objeto instanceof BasuraBolaPapel) gc.drawImage(ImageLoader.spriteBolaPapel,(intro)? objetoX:objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
+               else if(objeto instanceof BasuraPapelAvion) gc.drawImage(ImageLoader.spritePapelAvion,(intro)? objetoX:objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
+               else if(objeto instanceof BasuraFoco) gc.drawImage(ImageLoader.spriteFoco,(intro)? objetoX:objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
+               else if(objeto instanceof BasuraVentanaRoto) gc.drawImage(ImageLoader.spriteVentanaRoto,(intro)? objetoX:objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
+               else if(objeto instanceof BasuraBotellaRoto) gc.drawImage(ImageLoader.spriteBotellaRoto,(intro)? objetoX:objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
+
+
+               else if (objeto instanceof Camion) gc.drawImage(ImageLoader.spriteCamion, (intro)? objetoX:objeto.getX(),objeto.getY(), objeto.getWidth(), objeto.getHeight());
+               else if(objeto instanceof BoteBasura) gc.drawImage(ImageLoader.spriteBoteAzul,(intro)? objetoX:objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
            });
         }
 
@@ -523,6 +567,7 @@ public class Main extends Application {
         gc.fillRect( (indicator> 587? 587:indicator), 565,10,30);
     }
 
+
     public void paintPlayer(GraphicsContext gc,double t)
     {
         double playerX = (jugador.getX()+bg.getBackgroundX() < 0 && !intro) ? 0:jugador.getX()+bg.getBackgroundX();
@@ -557,6 +602,8 @@ public class Main extends Application {
                 gc.drawImage(ImageLoader.paradoIzquierda,(intro)? playerX:jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
             }
         }
+
+
     }
 
 
