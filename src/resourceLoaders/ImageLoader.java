@@ -30,6 +30,11 @@ public final class ImageLoader {
     public final static Image spriteBotellaRoto =new Image("file:resources//sprites//objeto//BotellaRoto.png");
     public final static Image spriteVentanaRoto =new Image("file:resources//sprites//objeto//VidrioRoto.png");
 
+    //Boton
+    public final static Image spriteBotonJugar =new Image("file:resources//sprites//controller//botonJugar.png",100,150,true,false);
+    public final static Image spriteBotonSalir =new Image("file:resources//sprites//controller//botonSalir.png",100,150,true,false);
+    public final static Image spriteBotonInstruccion =new Image("file:resources//sprites//controller//botonInstruccion.png",100,150,true,false);
+
     public final static Image spriteCamion=new Image("file:resources//sprites//objeto//Camion.png");
     public final static Image spriteBoteAzul= new Image("file:resources//sprites//objeto//BoteBasura.png");
     public final static Image[][] arrayImage = new Image[4][4];
