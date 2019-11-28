@@ -80,6 +80,7 @@ public class Main extends Application {
 
     @Override
     public void init() throws Exception {
+
         stateGame = StateGame.playing;
         initializeGroup();
         initializeControls();
@@ -95,11 +96,13 @@ public class Main extends Application {
 
         addComponet();
 
+
     }
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         setupPrimaryStage(primaryStage);
+
 
         new AnimationTimer() {
             @Override

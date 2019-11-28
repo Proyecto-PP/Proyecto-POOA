@@ -48,6 +48,7 @@ public class Background {
                 g.drawImage(SwingFXUtils.fromFXImage(ImageLoader.TILES[GAME_MAP[i][j]],null), null,j*tileWidth, i*tileHeight);
             }
         }
+
         return SwingFXUtils.toFXImage(newImage,null);
     }
 
