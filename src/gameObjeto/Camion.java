@@ -28,7 +28,7 @@ public class Camion extends MovingIsoEntity {
     public void move() {
         if(gasolina>0)
         {
-            if(Main.getJugador().getX()+Main.getJugador().getWidth()>600&&Main.getDx()>0)
+            if(Main.getJugador().getX()+Main.getJugador().getWidth()>600 && Main.getDx()>0)
             {
                 setX(getX() -0.2);
                 setHitboxX(getHitboxX() - 0.2);

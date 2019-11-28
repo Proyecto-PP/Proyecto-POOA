@@ -3,8 +3,6 @@ package sample;
 import botones.Button;
 import controller.ControlInput;
 import controller.ControlsSetup;
-import controller.KeyboardControl;
-import controller.TouchControl;
 
 import display.Background;
 import entidades.Entity;
@@ -57,6 +55,8 @@ public class Main extends Application {
     private static double dy;
     public static final double DASH_SPEED_MULT = 4;
     private static int dashCooldown;        //En frames 60 frames - 1 seg
+    private final double maxDashFrames = 10; //En Frames
+    private double dashFrames;
 
     private int puntaje;        //puntaje, como es un atributo de clase, se inicializa en 0 por default.
     Text texto = new Text();
@@ -111,7 +111,7 @@ public class Main extends Application {
             }
         }.start();
 
-        //reproductor.fadeInPlay(1);
+        reproductor.fadeInPlay(0.6);
 
         primaryStage.show();
     }
@@ -124,11 +124,13 @@ public class Main extends Application {
 
     //        Define propiedades basicas del stage.
     private void setupPrimaryStage(Stage primaryStage) {
-        //primaryStage.setAlwaysOnTop(true);        Esto es incomodo en la tablet, ya que no es facil mover la pantalla para ver otras ventanas por detras
         primaryStage.centerOnScreen();
         primaryStage.requestFocus();
         primaryStage.setTitle("Proyecto - PP");
-        primaryStage.setScene(escena);    //Uso una variable Scene para poder utilizar un teclado para pruebas.
+        primaryStage.setScene(escena);    //Uso una variable Scene para poder utilizar los listeners del teclado.
+        primaryStage.setResizable(false);
+        primaryStage.sizeToScene();
+
     }
 
     private void initializeControls() {
@@ -143,7 +145,7 @@ public class Main extends Application {
     private void initializeGroup() {
         //Aqui va la configuracion inicial del grupo y escena
         grupo = new Group();
-        escena = new Scene(grupo);
+        escena = new Scene(grupo, WIDTH, HEIGHT);
     }
 
     private void initializeCanvas() {
@@ -152,7 +154,7 @@ public class Main extends Application {
     }
 
     private void initializeReproductor() {
-        reproductor = new MusicPlayer(AudioLoader.persona5Song);
+        reproductor = new MusicPlayer(AudioLoader.muteCity);
         reproductor.setVolume(0);
     }
 
@@ -205,11 +207,10 @@ public class Main extends Application {
 
             texto.setText("EL puntaje es:"+puntaje+"                                   Gasolina:"+String.format("%.1f",camion.getGasolina()/10));
 
-            //Este es el metodo que determina que acciones estas tomando segun lo que presiones en el teclado (movimiento y demas)
+            //Este es el metodo que determina que acciones estas tomando segun lo que el jugador tenga presionado.
             updatePlayerMovement();
 
             arrayBasura.getArrayBasura().forEach(basura -> {
-
 
                 //collision de basura y jugador para agarra la basura
                 if (basura.nextTo(jugador.getX(), jugador.getY(), jugador.getWidth(), jugador.getHeight()) == 1) {
@@ -218,21 +219,7 @@ public class Main extends Application {
                     basura.setNextToPlayer(false);
                 }
 
-                // si el camion esta chocando a una basura se agrega esa basura a la lista de elimina
-                //------
-                //Esto deberia eliminarse, pues solamente los compartimientos deberian de poder eliminar la basura si es
-                //del tipo adecuado.
-                //Lo comento para hacer pruebas.
-                /*if (basura.collisionsWith(camion.getX(), camion.getY(), camion.getWidth(), camion.getHeight()) == 1) {
-                    //Si la basura colisiono por que la cargaba el jugador:
-                    if (basura.isMoving()) {
-                        //El jugador deja de estar cargando esa basura.
-                        jugador.setOcupado(false);
-                    }
-                    remove.add(basura);
-
-                    //Por cierto, no deberiamos quitar esto ya que ya tenemos el bote azul?
-                }*/
+                //Elimine la parte del codigo que eliminaba las basuras cuando chocaban con el camion.
 
                 //collision con para sacar puntaje
                 if (basura.isMoving()) {
@@ -258,28 +245,28 @@ public class Main extends Application {
                 basura.move();
 
             });
-            //collision de jugador con el
+
+            //Si el jugador colisiona con el camion...
             if(camion.collisionsWith(jugador.getHitboxX()+dx,jugador.getHitboxY()+dy,jugador.getHitboxWidth(),jugador.getHitboxHeight())==1)
             {
-                if(dx < 0 && jugador.getHitboxX() > (camion.getHitboxX() + camion.getHitboxWidth()) ) {
-
-                } else {
-                    camion.move();
-                    boteAzul.move();
-                }
-
+                //Se frena al jugador y
                 dx=0;
                 dy=0;
 
                 jugador.setDashing(false);
 
-                //Hay problemas con esto, por que si el camion te atraviesa mientras avanza por su cuenta, tu dejas de poder
-                //moverte completamente.
+                //Si el jugador NO esta en frente del camion:
+                if( !(jugador.getHitboxX() > camion.getHitboxX() &&
+                      jugador.getHitboxY() + jugador.getHitboxHeight() > camion.getHitboxY() &&
+                      jugador.getHitboxY() < camion.getHitboxY() + camion.getHitboxHeight()) ) {
+
+                    //Que se mueva el camion aunque este colisionando con el.
+                    camion.move();
+                    boteAzul.move();
+                }
             } else {
-                //Que solo se pueda mover si no colisiona con el jugador?
                 camion.move();
                 boteAzul.move();
-
             }
 
             //Lista de elimianr (si es size de la lista eliminar se elimina)
@@ -289,9 +276,6 @@ public class Main extends Application {
                 arrayEntidad.removeAll(remove);
                 //Faltaba poner que se limpiara cada vez que eliminaba los objetos que hacia falta eliminar.
                 remove.clear();
-
-                //Quite lo de jugador.setOcupado por que habia basura que se encontraba en el camino del camion, chocaba,
-                //se mandaba a eliminar y nunca estuvo en las manos del jugador.
             }
             //fin de juego
         }
@@ -304,22 +288,16 @@ public class Main extends Application {
             texto.setText("perdimos");
         }
 
-
-        //Los movimientos deberian hacerse todos al ultimo para darle tiempo al programa de procesar que es lo que debe
-        //hacer tomando en cuenta el estado actual del juego (y no me refiero a los states).
-
-        //camion.move();
+        //Esto debe ir al ultimo por que se deben realizar todas las validaciones antes de darle permiso de cambiar
+        //su posicion.
         jugador.move();
-        //boteAzul.move();
-
 
     }
 
     private void updatePlayerMovement() {
 
-        //Lo uso unicamente para el teclado.
-        //Si lo ponia de forma independiente o en otro thread, lo que pasaba es que podia brincarse las verificaciones
-        //que haciamos para colisiones y los botones.
+        //Tanto el touch como el teclado comparten funcionamiento, y se realizan cambios segun lo que se tenga presionado
+        //en este metodo.
 
         if(!jugador.isDashing()) {
             if (ControlInput.isButtonPressed("Up") && !ControlInput.isButtonPressed("DOWN")) {
@@ -405,6 +383,8 @@ public class Main extends Application {
                 Main.setDy(0);
             }
 
+
+            //Esto es para agarrar y soltar basura
             if (ControlInput.isButtonPressed("S")) {
 
                 if(!ControlInput.isAltButtonA()) {
@@ -435,6 +415,8 @@ public class Main extends Application {
                 ControlInput.setAltButtonA(false);
             }
 
+
+            //Este es el dash
             if (ControlInput.isButtonPressed("D")) {
                 if( (dx != 0 || dy != 0) && !ControlInput.isAltButtonB() && dashCooldown == 0) {     //Si se está moviendo hacia alguna direccion.
                     jugador.setDashing(true);
@@ -446,7 +428,7 @@ public class Main extends Application {
                 ControlInput.setAltButtonB(false);
             }
 
-            if(dashCooldown > 0) {
+            if(dashCooldown > 0) {      //Contador para evitar que hagan dash seguidos.
                 dashCooldown--;
             }
 
@@ -454,19 +436,20 @@ public class Main extends Application {
 
             //Si el jugador está haciendo un dash no deberia de poder moverse por en medio.
 
-            if(jugador.getDashFrames() != jugador.getDashTime()*60 ) {
-                if(jugador.getDashFrames() == 0) {
+            //Se usa un contador para saber cuanto tiempo estara en el estado del dash. Y hasta que no llegue
+            //a un limite [maxDashFrames] se suma 1 a ese contador. Cuando dashFrames llega a maxDashFrames, se saca
+            //al jugador del estado de "dashing" y se ponen 60 frames [1 segundo] de cooldown al dash.
+            if(dashFrames != maxDashFrames) {
+                if(dashFrames == 0) {
                     dx = dx * DASH_SPEED_MULT;
                     dy = dy * DASH_SPEED_MULT;
                 }
-                jugador.setDashFrames(jugador.getDashFrames() + 1);
+                dashFrames++;
             } else {
                 jugador.setDashing(false);
-                jugador.setDashFrames(0);
-                dashCooldown = 60;     //frames - 1 seg
+                dashFrames = 0;
+                dashCooldown = 60;     //son 60 frames - 1 seg
             }
-
-
         }
 
     }
@@ -503,10 +486,6 @@ public class Main extends Application {
         if(stateGame==StateGame.playing)
         {
             grupo.getChildren().addAll(botonA, botonB, dpad, texto);
-
-            //Temp
-            //escena.setOnKeyPressed(keyboardListener);
-
         }
 
         //else if? switch tal vez para cuando tengamos mas?
@@ -517,8 +496,8 @@ public class Main extends Application {
     }
 
     private void paintBackground(GraphicsContext gc){
-        gc.drawImage(Background.GAME_BG, -(jugador.getX()-100),0, 1024, 600);
-        gc.drawImage(Background.GAME_BG, -(jugador.getX()-Background.MAP_WIDTH), 0, 1024, 600);
+        gc.drawImage(Background.GAME_BG, -(jugador.getX()-100),0, WIDTH, HEIGHT);
+        gc.drawImage(Background.GAME_BG, -(jugador.getX()-Background.MAP_WIDTH), 0, WIDTH, HEIGHT);
 
    //  gc.drawImage(Background.GAME_BG,0,0,1024,600);
 

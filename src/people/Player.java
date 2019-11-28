@@ -10,8 +10,6 @@ public class Player extends MovingIsoEntity {
     private boolean ocupado;
 
     private boolean dashing;
-    private final double dashTime = 0.15; //seg
-    private double dashFrames;
 
     public Player(String name, double x, double y, double width, double height, double hitboxSize) {
         super(name, x, y, width, height, hitboxSize);
@@ -78,15 +76,4 @@ public class Player extends MovingIsoEntity {
         this.dashing = dashing;
     }
 
-    public double getDashTime() {
-        return dashTime;
-    }
-
-    public double getDashFrames() {
-        return dashFrames;
-    }
-
-    public void setDashFrames(double dashFrames) {
-        this.dashFrames = dashFrames;
-    }
 }
