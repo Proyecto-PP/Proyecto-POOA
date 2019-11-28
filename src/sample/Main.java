@@ -202,7 +202,7 @@ public class Main extends Application {
     private void showLevel(double t) {
         if (!shift) {
             bg.setBackgroundX(bg.getBackgroundX() - 9);
-            if(bg.getBackgroundX()-1024 < -bg.getGameBg().getWidth())
+            if(bg.getBackgroundX()-1100 < -bg.getGameBg().getWidth())
                 shift = true;
         } else {
             bg.setBackgroundX(bg.getBackgroundX() + 9);
