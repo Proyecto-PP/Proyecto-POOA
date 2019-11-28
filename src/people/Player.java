@@ -18,8 +18,8 @@ public class Player extends MovingIsoEntity {
 
     public static final double SPEED = 4;
 
-    public Player(String name, double x, double y, double width, double height, double hitboxSize) {
-        super(name, x, y, width, height, hitboxSize);
+    public Player( double x, double y, double width, double height, double hitboxSize) {
+        super( x, y, width, height, hitboxSize);
         state=StatePlayer.abajo;
         colisionado=false;
         ocupado=false;
