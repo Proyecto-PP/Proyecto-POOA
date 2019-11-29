@@ -37,7 +37,7 @@ public final class ControlsSetup {
         botonA.setOnTouchReleased(event -> {
             botonA.setOpacity(0.65);
             //Lo que quieres que haga el boton A cuando se suelta.
-            if(!Main.getJugador().isOcupado())
+            if(!Main.getJugador().isCargandoBasura())
             {
                 for (Basura basura:
                         Main.getArrayBasura().getArrayBasura()) {
@@ -45,17 +45,17 @@ public final class ControlsSetup {
                     {
                         basura.setMoving(true);
 
-                        Main.getJugador().setOcupado(true);
+                        Main.getJugador().setCargandoBasura(true);
                     }
                 }
-            } else if(Main.getJugador().isOcupado()) {
+            } else if(Main.getJugador().isCargandoBasura()) {
                 for (Basura basura:
                         Main.getArrayBasura().getArrayBasura()){
                     if(basura.isMoving())
                     {
                         basura.setMoving(false);
                         //basura.setCollision(false);
-                        Main.getJugador().setOcupado(false);
+                        Main.getJugador().setCargandoBasura(false);
                     }
                 }
             }
