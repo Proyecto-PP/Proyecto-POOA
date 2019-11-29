@@ -81,9 +81,9 @@ public abstract class Entity implements Serializable {
         en culaquier punto justo a un lado del espacio que ocupa la entidad. De otro modo, devuelve 0.
         [No para esquinas]
     */
-    public int nextTo(double x, double y, double width, double height) {
-        if ((x + width + 1 >= this.x && x - 1 <= this.x + this.width) &&
-                (y + height + 1 >= this.y && y - 1 <= this.y + this.height)) {
+    public int nextTo(double x, double y, double width, double height, double range) {
+        if ((x + width + range >= this.x && x - range <= this.x + this.width) &&
+                (y + height + range >= this.y && y - range <= this.y + this.height)) {
 
             return 1;
         }

@@ -1,14 +1,16 @@
 package people;
 
 import entidades.MovingIsoEntity;
-import resourceLoaders.ImageLoader;
+import enums.Direccion;
+import gameObjeto.basura.Basura;
 import sample.Main;
 
 public class Player extends MovingIsoEntity {
     private static int vida=3;
-    public StatePlayer state;
+    public Direccion direccion;
     private boolean colisionado;
-    private boolean ocupado;
+    private boolean cargandoBasura;
+    private Basura basura;
 
     private boolean dashing;
 
@@ -16,25 +18,25 @@ public class Player extends MovingIsoEntity {
 
     public Player( double x, double y, double width, double height, double hitboxSize) {
         super( x, y, width, height, hitboxSize);
-        state=StatePlayer.abajo;
+        direccion = Direccion.abajo;
         colisionado=false;
-        ocupado=false;
+        cargandoBasura =false;
     }
 
     public Player( double x, double y, double width, double height, double hitboxX, double hitboxY, double hitboxWidth, double hitboxHeight) {
         super( x, y, width, height, hitboxX, hitboxY, hitboxWidth, hitboxHeight);
-        state=StatePlayer.abajo;
+        direccion = Direccion.abajo;
         colisionado=false;
-        ocupado=false;
+        cargandoBasura =false;
     }
 
 
-    public StatePlayer getState() {
-        return state;
+    public Direccion getDireccion() {
+        return direccion;
     }
 
-    public void setState(StatePlayer state) {
-        this.state = state;
+    public void setDireccion(Direccion direccion) {
+        this.direccion = direccion;
     }
 
     public boolean isColisionado() {
@@ -45,40 +47,22 @@ public class Player extends MovingIsoEntity {
         this.colisionado = colisionado;
     }
 
-    public boolean isOcupado() {
-        return ocupado;
+    public boolean isCargandoBasura() {
+        return cargandoBasura;
     }
 
-    public void setOcupado(boolean ocupado) {
-        this.ocupado = ocupado;
+    public void setCargandoBasura(boolean cargandoBasura) {
+        this.cargandoBasura = cargandoBasura;
     }
 
     @Override
     public void move() {
+            //Movimiento
 
-        if(getX() + Main.getDx() < 0){
-            setX(0);
-            setHitboxX(0);
-        }
-        else if(getY() + Main.getDy() < 0){
-            setY(0);
-            setHitboxY(0);
-        }
-        else if(getX() + Main.getDx() > Main.WIDTH - ImageLoader.paradoArriba.getWidth()){
-            setX(1024- ImageLoader.paradoArriba.getWidth());
-            setHitboxX(1024- ImageLoader.paradoArriba.getWidth());
-        }
-        else if(getY() + Main.getDy() > Main.HEIGHT - ImageLoader.paradoArriba.getHeight()){
-            setY(600 - ImageLoader.paradoArriba.getHeight());
-            setHitboxY(600- ImageLoader.paradoArriba.getHeight());
-        }
-        else{
-            setX(getX() + Main.getDx());
-            setY(getY() + Main.getDy());
-            setHitboxX(getHitboxX() + Main.getDx());
-            setHitboxY(getHitboxY() + Main.getDy());
-        }
-
+            setX(getX() + getDx());
+            setY(getY() + getDy());
+            setHitboxX(getHitboxX() + getDx());
+            setHitboxY(getHitboxY() + getDy());
     }
 
 
@@ -90,4 +74,11 @@ public class Player extends MovingIsoEntity {
         this.dashing = dashing;
     }
 
+    public Basura getBasura() {
+        return basura;
+    }
+
+    public void setBasura(Basura basura) {
+        this.basura = basura;
+    }
 }

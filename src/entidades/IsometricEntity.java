@@ -114,9 +114,9 @@ public abstract class IsometricEntity extends Entity {
         [No para esquinas] [A 2 pixeles de adyacencia se considera que una entidad esta "nextTo" (al lado de) esta entidad]
     */
     @Override
-    public int nextTo(double x, double y, double width, double height) {
-        if( (x + width + 2 >= this.hitboxX && x - 2 <= this.hitboxX + this.hitboxWidth) &&
-            (y + height + 2 >= this.hitboxY && y - 2 <= this.hitboxY + this.hitboxHeight)) {
+    public int nextTo(double x, double y, double width, double height, double range) {
+        if( (x + width + range >= this.hitboxX && x - range <= this.hitboxX + this.hitboxWidth) &&
+            (y + height + range >= this.hitboxY && y - range <= this.hitboxY + this.hitboxHeight)) {
 
             return 1;
         }

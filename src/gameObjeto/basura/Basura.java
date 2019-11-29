@@ -5,21 +5,18 @@ import gameObjeto.Camion;
 import sample.Main;
 
 public abstract class Basura extends MovingIsoEntity {
-    private boolean nextToPlayer;
+    private boolean nextToPlayer;       //Todos los atributos se inicializan en 0, false o null cuando se instancia un objetp.
     private boolean moving;
 
     public Basura( double x, double y, double width, double height, double hitboxSize) {
         super( x, y, width, height, hitboxSize);
-        moving=false;
-        nextToPlayer =false;
+        setDx(-2);
     }
 
     public Basura( double x, double y, double width, double height, double hitboxX, double hitboxY, double hitboxWidth, double hitboxHeight) {
         super( x, y, width, height, hitboxX, hitboxY, hitboxWidth, hitboxHeight);
-        moving=false;
-        nextToPlayer =false;
+        setDx(-2);
     }
-
 
     public boolean isNextToPlayer() {
         return nextToPlayer;
@@ -43,27 +40,13 @@ public abstract class Basura extends MovingIsoEntity {
         {
            setX(Main.getJugador().getX());
            setY(Main.getJugador().getY()-50);
-           setHitboxX(Main.getJugador().getX());
-           setHitboxY(Main.getJugador().getY()-50);
+           setHitboxX(Main.getJugador().getHitboxX());
+           setHitboxY(Main.getJugador().getHitboxY()-50);
         }
         if(!moving)
         {
-            setX(getX() - Camion.SPEED);
-            setHitboxX(getHitboxX()- Camion.SPEED);
-            if(Main.getDx()>0)
-            {
-
-            }
-            else
-                if(Main.getDx()<0)
-                {
-                    /*
-                    setX(getX()+0.16);
-                    setHitboxX(getHitboxX()+0.16);
-
-                     */
-                }
+            setX(getX() + getDx());
+            setHitboxX(getHitboxX() + getDx());
         }
-
     }
 }
