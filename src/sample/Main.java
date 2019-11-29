@@ -71,7 +71,7 @@ public class Main extends Application {
     private double dashFrames;
 
     private boolean intro = false;
-    private boolean shift = false;  //False = derecha
+    private boolean shift = false; //False = derecha
 
     private int puntaje;        //puntaje, como es un atributo de clase, se inicializa en 0 por default.
     Text texto = new Text();
@@ -91,6 +91,8 @@ public class Main extends Application {
     private Background bg;
 
     private Comparator cmpArrayEntidad;
+
+    public int i;
 
     @Override
     public void init() throws Exception {
@@ -208,7 +210,7 @@ public class Main extends Application {
     private void showLevel(double t) {
         if (!shift) {
             bg.setBackgroundX(bg.getBackgroundX() - 9);
-            if(bg.getBackgroundX()-(WIDTH+100) < -bg.getGameBg().getWidth())
+            if(bg.getBackgroundX()-1100 < -bg.getGameBg().getWidth())
                 shift = true;
         } else {
             bg.setBackgroundX(bg.getBackgroundX() + 9);
@@ -217,7 +219,7 @@ public class Main extends Application {
                 intro = false;
             }
         }
-        //System.out.printf("%d\r", bg.getBackgroundX());
+        System.out.printf("%d\r", bg.getBackgroundX());
         updateGraphic(gc, t);
     }
 
@@ -247,12 +249,9 @@ public class Main extends Application {
 
             //Esto debe ir al ultimo por que se deben realizar todas las validaciones antes de darle permiso de cambiar
             //su posicion.
-            /*
             System.out.println(jugador.getHitboxX() + " " + jugador.getHitboxY());
             System.out.println(camion.getHitboxX() + " " + camion.getHitboxY() + " - " +
                     (camion.getHitboxX()+camion.getHitboxWidth()) + " " + (camion.getHitboxY()+camion.getHitboxHeight()) );
-
-             */
             jugador.move();
 
         }
@@ -333,35 +332,39 @@ public class Main extends Application {
             camion.move();
             boteAzul.move();
             bg.setBackgroundX( -camion.getDistance() );
+        } else if(getCollisionDirection(camion, jugador) != Direccion.izquierda) {
+            camion.move();
+            boteAzul.move();
+            bg.setBackgroundX( -camion.getDistance() );
         }
-
-        /*
-
-        camion.collisionsWith(jugador.getHitboxX() + jugador.getDx(),jugador.getHitboxY() + jugador.getDy(),
-                                    jugador.getHitboxWidth(), jugador.getHitboxHeight()) == 1
-         */
     }
 
     private void screenEdgesCollision() {
+
+        //En las esquinas puede hacer mas de una de estas condiciones al mismo tiempo. Dejan de ser else-if y se vuelven
+        //solo if's.
 
         if(jugador.getX() + jugador.getDx() < 0){
             jugador.setX(0);
             jugador.setHitboxX(0);
             jugador.setDx(0);
         }
-        else if(jugador.getY() + jugador.getDy() < 0){
+
+        if(jugador.getY() + jugador.getDy() < 0){
             jugador.setY(0);
-            jugador.setHitboxY(0);
+            jugador.setHitboxY(jugador.getHitboxHeight());
             jugador.setDy(0);
         }
-        else if(jugador.getX() + jugador.getDx() > Main.WIDTH - ImageLoader.paradoArriba.getWidth()){
-            jugador.setX(Main.WIDTH - ImageLoader.paradoArriba.getWidth());
-            jugador.setHitboxX(Main.WIDTH - ImageLoader.paradoArriba.getWidth());
+
+        if(jugador.getX() + jugador.getDx() > Main.WIDTH - ImageLoader.paradoArriba.getWidth()){
+            jugador.setX(Main.WIDTH - jugador.getWidth());
+            jugador.setHitboxX(Main.WIDTH - jugador.getHitboxWidth());
             jugador.setDx(0);
         }
-        else if(jugador.getY() + jugador.getDy() > Main.HEIGHT - ImageLoader.paradoArriba.getHeight()){
-            jugador.setY(Main.HEIGHT - ImageLoader.paradoArriba.getHeight());
-            jugador.setHitboxY(Main.HEIGHT- ImageLoader.paradoArriba.getHeight());
+
+        if(jugador.getY() + jugador.getDy() > Main.HEIGHT - jugador.getHeight()) { //- ImageLoader.paradoArriba.getHeight()){
+            jugador.setY(Main.HEIGHT - jugador.getHeight());
+            jugador.setHitboxY(Main.HEIGHT- jugador.getHitboxHeight());
             jugador.setDy(0);
         }
 
@@ -699,15 +702,14 @@ public class Main extends Application {
     }
 
     private void showProgressBar(GraphicsContext gc){
+        double progress = -bg.getBackgroundX()/64;
 
-        double xPos = (WIDTH/2)-75;     //Obtener la coordenada x donde inicia la barra
         gc.setStroke(Color.BLACK);
-        gc.strokeRect(xPos,HEIGHT-25,150,10);
+        gc.strokeRect(437,575,150,10);
         gc.setFill(Color.WHITE);
 
-        double progress = -(bg.getBackgroundX()*100)/bg.getGameBg().getWidth();  //  Regla de 3 para % de progreso del nivel
-        double indicator = (progress*2)+xPos;          //  Regla de 3 para posicion del indicador en la barra
-        gc.fillRect( (Math.min(indicator, xPos + 150)), HEIGHT-35,10,30);
+        double indicator = progress*2+437;
+        gc.fillRect( (indicator> 587? 587:indicator), 565,10,30);
     }
 
     public void paintPlayer(GraphicsContext gc,double t)
