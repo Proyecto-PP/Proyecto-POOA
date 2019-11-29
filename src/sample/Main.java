@@ -92,6 +92,8 @@ public class Main extends Application {
 
     private Comparator cmpArrayEntidad;
 
+    public int i;
+
     @Override
     public void init() throws Exception {
         stateGame = StateGame.playing;
@@ -330,35 +332,39 @@ public class Main extends Application {
             camion.move();
             boteAzul.move();
             bg.setBackgroundX( -camion.getDistance() );
+        } else if(getCollisionDirection(camion, jugador) != Direccion.izquierda) {
+            camion.move();
+            boteAzul.move();
+            bg.setBackgroundX( -camion.getDistance() );
         }
-
-        /*
-
-        camion.collisionsWith(jugador.getHitboxX() + jugador.getDx(),jugador.getHitboxY() + jugador.getDy(),
-                                    jugador.getHitboxWidth(), jugador.getHitboxHeight()) == 1
-         */
     }
 
     private void screenEdgesCollision() {
+
+        //En las esquinas puede hacer mas de una de estas condiciones al mismo tiempo. Dejan de ser else-if y se vuelven
+        //solo if's
 
         if(jugador.getX() + jugador.getDx() < 0){
             jugador.setX(0);
             jugador.setHitboxX(0);
             jugador.setDx(0);
         }
-        else if(jugador.getY() + jugador.getDy() < 0){
+
+        if(jugador.getY() + jugador.getDy() < 0){
             jugador.setY(0);
-            jugador.setHitboxY(0);
+            jugador.setHitboxY(jugador.getHitboxHeight());
             jugador.setDy(0);
         }
-        else if(jugador.getX() + jugador.getDx() > Main.WIDTH - ImageLoader.paradoArriba.getWidth()){
-            jugador.setX(Main.WIDTH - ImageLoader.paradoArriba.getWidth());
-            jugador.setHitboxX(Main.WIDTH - ImageLoader.paradoArriba.getWidth());
+
+        if(jugador.getX() + jugador.getDx() > Main.WIDTH - ImageLoader.paradoArriba.getWidth()){
+            jugador.setX(Main.WIDTH - jugador.getWidth());
+            jugador.setHitboxX(Main.WIDTH - jugador.getHitboxWidth());
             jugador.setDx(0);
         }
-        else if(jugador.getY() + jugador.getDy() > Main.HEIGHT - ImageLoader.paradoArriba.getHeight()){
-            jugador.setY(Main.HEIGHT - ImageLoader.paradoArriba.getHeight());
-            jugador.setHitboxY(Main.HEIGHT- ImageLoader.paradoArriba.getHeight());
+
+        if(jugador.getY() + jugador.getDy() > Main.HEIGHT - jugador.getHeight()) { //- ImageLoader.paradoArriba.getHeight()){
+            jugador.setY(Main.HEIGHT - jugador.getHeight());
+            jugador.setHitboxY(Main.HEIGHT- jugador.getHitboxHeight());
             jugador.setDy(0);
         }
 
