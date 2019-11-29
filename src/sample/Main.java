@@ -71,7 +71,7 @@ public class Main extends Application {
     private double dashFrames;
 
     private boolean intro = false;
-    private boolean shift = false; //False = derecha
+    private boolean shift = false;  //False = derecha
 
     private int puntaje;        //puntaje, como es un atributo de clase, se inicializa en 0 por default.
     Text texto = new Text();
@@ -210,7 +210,7 @@ public class Main extends Application {
     private void showLevel(double t) {
         if (!shift) {
             bg.setBackgroundX(bg.getBackgroundX() - 9);
-            if(bg.getBackgroundX()-1100 < -bg.getGameBg().getWidth())
+            if(bg.getBackgroundX()-(WIDTH+100) < -bg.getGameBg().getWidth())
                 shift = true;
         } else {
             bg.setBackgroundX(bg.getBackgroundX() + 9);
@@ -219,7 +219,7 @@ public class Main extends Application {
                 intro = false;
             }
         }
-        System.out.printf("%d\r", bg.getBackgroundX());
+        //System.out.printf("%d\r", bg.getBackgroundX());
         updateGraphic(gc, t);
     }
 
@@ -249,9 +249,12 @@ public class Main extends Application {
 
             //Esto debe ir al ultimo por que se deben realizar todas las validaciones antes de darle permiso de cambiar
             //su posicion.
+            /*
             System.out.println(jugador.getHitboxX() + " " + jugador.getHitboxY());
             System.out.println(camion.getHitboxX() + " " + camion.getHitboxY() + " - " +
                     (camion.getHitboxX()+camion.getHitboxWidth()) + " " + (camion.getHitboxY()+camion.getHitboxHeight()) );
+
+             */
             jugador.move();
 
         }
@@ -702,14 +705,15 @@ public class Main extends Application {
     }
 
     private void showProgressBar(GraphicsContext gc){
-        double progress = -bg.getBackgroundX()/64;
 
+        double xPos = (WIDTH/2)-75;     //Obtener la coordenada x donde inicia la barra
         gc.setStroke(Color.BLACK);
-        gc.strokeRect(437,575,150,10);
+        gc.strokeRect(xPos,HEIGHT-25,150,10);
         gc.setFill(Color.WHITE);
 
-        double indicator = progress*2+437;
-        gc.fillRect( (indicator> 587? 587:indicator), 565,10,30);
+        double progress = -(bg.getBackgroundX()*100)/bg.getGameBg().getWidth();  //  Regla de 3 para % de progreso del nivel
+        double indicator = (progress*2)+xPos;          //  Regla de 3 para posicion del indicador en la barra
+        gc.fillRect( (Math.min(indicator, xPos + 150)), HEIGHT-35,10,30);
     }
 
     public void paintPlayer(GraphicsContext gc,double t)
