@@ -18,7 +18,7 @@ public class Player extends MovingIsoEntity {
 
     public Player( double x, double y, double width, double height, double hitboxSize) {
         super( x, y, width, height, hitboxSize);
-        direccion = Direccion.abajo;
+        direccion = Direccion.derecha;
         colisionado=false;
         cargandoBasura =false;
     }

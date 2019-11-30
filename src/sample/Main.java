@@ -78,7 +78,7 @@ public class Main extends Application {
     public static Button botonJugar=new Button(300,200,50,60, ImageLoader.spriteBotonJugar);
     public static Button botonInstruccion=new Button(300,300,50,60, ImageLoader.spriteBotonInstruccion);
     public static Button botonSalir=new Button(300,400,50,60, ImageLoader.spriteBotonSalir);
-    public static Button botonVolverMenu=new Button(550,500,50,60, ImageLoader.spriteBotonJugar);
+    public static Button botonVolverMenu=new Button(250,500,50,60, ImageLoader.spriteBotonJugar);
 
     final long startNanoTime = System.nanoTime();
 
