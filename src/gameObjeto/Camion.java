@@ -9,7 +9,7 @@ public class Camion extends MovingIsoEntity {
     private float gasolina=1000;
     public static final int SPEED = 2;
 
-    public Camion(double x, double y, double width, double height, double hitboxSize) {
+    public Camion(double x, double y, double width, double height, double hitboxSize                                                                          ) {
         super(x, y, width, height, hitboxSize);
     }
 

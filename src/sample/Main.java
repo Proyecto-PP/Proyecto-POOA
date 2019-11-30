@@ -24,10 +24,14 @@ import gameObjeto.boteBasura.BoteBasura;
 import gameObjeto.boteBasura.BotePlastico;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.TextInputDialog;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.input.TouchEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -39,6 +43,7 @@ import resourceLoaders.AudioLoader;
 import resourceLoaders.ImageLoader;
 import teclado.TecladoFX;
 
+import javax.swing.*;
 import java.util.*;
 
 
@@ -61,6 +66,9 @@ public class Main extends Application {
     private Button botonB;
     private Button dpad;
     private TecladoFX teclado;
+    public static Button botonJugar=new Button(300,200,50,60, ImageLoader.spriteBotonJugar);
+    public static Button botonInstruccion=new Button(300,300,50,60, ImageLoader.spriteBotonInstruccion);
+    public static Button botonSalir=new Button(300,400,50,60, ImageLoader.spriteBotonSalir);
 
     final long startNanoTime = System.nanoTime();
 
@@ -93,10 +101,11 @@ public class Main extends Application {
     private Comparator cmpArrayEntidad;
 
     public int i;
+    TextInputDialog dialog = new TextInputDialog("walter");
 
     @Override
     public void init() throws Exception {
-        stateGame = StateGame.playing;
+        stateGame = StateGame.menu;
 
         initializeGroup();
         initializeControls();
@@ -104,6 +113,7 @@ public class Main extends Application {
         initializeReproductor();
         initializeArrayEntidad();
         initializeUtilities();
+        inicializaBotonMenu();
 
         arrayEntidad.sort(cmpArrayEntidad);    //Le hacemos un sort antes de empezar para que no tarde la primera vez que lo haga
                                                             //dentro del juego
@@ -120,7 +130,11 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         setupPrimaryStage(primaryStage);
-
+   /*   componente grafico para capturar nombre
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()){
+            System.out.println("Your name: " + result.get());
+        }*/
         new AnimationTimer() {
             @Override
             public void handle(long now) {
@@ -132,6 +146,7 @@ public class Main extends Application {
                 else {
                     updateLogic();
                     updateGraphic(gc, t);
+                //    System.out.println(result.get());
                 }
             }
         }.start();
@@ -692,7 +707,12 @@ public class Main extends Application {
         grupo.getChildren().clear();
         grupo.getChildren().add(canvas);
 
-        if(stateGame==StateGame.playing)
+        if(stateGame==StateGame.menu)
+        {
+            grupo.getChildren().addAll(botonInstruccion,botonJugar,botonSalir);
+        }
+
+        else if(stateGame==StateGame.playing)
         {
             grupo.getChildren().addAll(botonA, botonB, dpad, texto);
         }
@@ -750,6 +770,54 @@ public class Main extends Application {
                 gc.drawImage(ImageLoader.paradoIzquierda,(intro)? playerX:jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
             }
         }
+    }
+
+    public void inicializaBotonMenu()
+    {
+        botonJugar.setOnTouchPressed(new EventHandler<TouchEvent>() {
+            @Override
+            public void handle(TouchEvent event) {
+                setStateGame(StateGame.playing);
+                addComponet();
+
+            }
+        });
+
+        botonJugar.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                setStateGame(StateGame.playing);
+                addComponet();
+            }
+        });
+
+        botonInstruccion.setOnTouchPressed(new EventHandler<TouchEvent>() {
+            @Override
+            public void handle(TouchEvent event) {
+                //Main.setStateGame(StateGame.playing);
+            }
+        });
+
+        botonInstruccion.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                //   Main.setStateGame(StateGame.playing);
+            }
+        });
+
+        botonSalir.setOnTouchPressed(new EventHandler<TouchEvent>() {
+            @Override
+            public void handle(TouchEvent event) {
+                System.exit(0);
+            }
+        });
+
+        botonSalir.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                System.exit(0);
+            }
+        });
     }
 
 
