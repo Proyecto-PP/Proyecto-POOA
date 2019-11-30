@@ -32,7 +32,7 @@ public class Camion extends MovingIsoEntity {
             distance += SPEED;
             //setX( getX() +SPEED);
             //(getHitboxX() +SPEED);
-            gasolina -= 0.16 ;
+            gasolina -= 32 ;
             /*
             if(Main.getJugador().getX()+Main.getJugador().getWidth()>600&&Main.getDx()>0)
             {

@@ -1,5 +1,7 @@
 package sample;
 
+import archivoSeriazable.AccionArchivo;
+import archivoSeriazable.Resultado;
 import botones.Button;
 import controller.ControlInput;
 import controller.ControlsSetup;
@@ -24,6 +26,8 @@ import gameObjeto.boteBasura.BoteBasura;
 import gameObjeto.boteBasura.BotePlastico;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -43,7 +47,10 @@ import resourceLoaders.AudioLoader;
 import resourceLoaders.ImageLoader;
 import teclado.TecladoFX;
 
-import javax.swing.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.*;
 
 
@@ -69,6 +76,7 @@ public class Main extends Application {
     public static Button botonJugar=new Button(300,200,50,60, ImageLoader.spriteBotonJugar);
     public static Button botonInstruccion=new Button(300,300,50,60, ImageLoader.spriteBotonInstruccion);
     public static Button botonSalir=new Button(300,400,50,60, ImageLoader.spriteBotonSalir);
+    public static Button botonVolverMenu=new Button(550,500,50,60, ImageLoader.spriteBotonJugar);
 
     final long startNanoTime = System.nanoTime();
 
@@ -77,7 +85,8 @@ public class Main extends Application {
     private static int dashCooldown;        //En frames 60 frames - 1 seg
     private final double maxDashFrames = 10; //En Frames
     private double dashFrames;
-
+    private Resultado resultado=new Resultado();
+    private Resultado resultadoScore= new Resultado();
     private boolean intro = false;
     private boolean shift = false;  //False = derecha
 
@@ -99,9 +108,11 @@ public class Main extends Application {
     private Background bg;
 
     private Comparator cmpArrayEntidad;
-
-    public int i;
+    //captura de nombre de usuario
     TextInputDialog dialog = new TextInputDialog("walter");
+    Text textoPuntaje,textoName,textoPuntajeScore,textoNameScore;
+    //contador de captura
+    boolean captura=true;
 
     @Override
     public void init() throws Exception {
@@ -114,6 +125,7 @@ public class Main extends Application {
         initializeArrayEntidad();
         initializeUtilities();
         inicializaBotonMenu();
+        iniciarTexto();
 
         arrayEntidad.sort(cmpArrayEntidad);    //Le hacemos un sort antes de empezar para que no tarde la primera vez que lo haga
                                                             //dentro del juego
@@ -123,6 +135,7 @@ public class Main extends Application {
         texto.setY(40);
         texto.setFont(Font.font("Verdana", 30));
 
+        resultadoScore=AccionArchivo.leer();
         addComponet();
 
     }
@@ -231,7 +244,7 @@ public class Main extends Application {
         //else if? switch tal vez para cuando tengamos mas?
         if(stateGame==StateGame.gameOver)
         {
-
+            grupo.getChildren().addAll(textoName,textoNameScore,textoPuntajeScore,textoPuntaje,botonVolverMenu);
         }
     }
 
@@ -259,13 +272,17 @@ public class Main extends Application {
 
     public void updateLogic()
     {
+        if(stateGame==StateGame.menu)
+        {
+
+        }
 
         if(stateGame==StateGame.playing)
         {
 
             Collections.sort(arrayEntidad, cmpArrayEntidad);    //Instancie el comparador en el initializeUtilities para que no se cree uno nuevo cada vez.
 
-            texto.setText("EL puntaje es:"+puntaje+"                                   Gasolina:"+String.format("%.1f",camion.getGasolina()/10));
+            texto.setText("EL puntaje es:"+resultado.getPuntaje()+"                                   Gasolina:"+String.format("%.1f",camion.getGasolina()));
 
             updatePlayerMovement();
             collisionDetection();
@@ -275,11 +292,256 @@ public class Main extends Application {
             jugador.move();
 
         }
+        if(stateGame==StateGame.resultado)
+        {
+
+        }
 
         updateGameState();
 
     }
 
+    private void updateGameState() {
+        if(stateGame == StateGame.playing) {
+
+            if(camion.getGasolina()<0)
+            {  setStateGame(StateGame.gameOver);
+
+
+            }
+
+            if(bg.getBackgroundX() < -bg.getGameBg().getWidth() + WIDTH) {
+                setStateGame(StateGame.gameOver);
+            }
+
+            if(stateGame==StateGame.gameOver)
+            {
+
+                    System.out.println(resultado.getName());
+                    setStateGame(StateGame.resultado);
+                    capturaNombreUsuario();
+                   addComponet();
+
+            }
+            }
+        }
+
+
+    private void collisionDetection() {
+
+        screenEdgesCollision();
+        camionCollision();
+        checkBasuraCollisions();
+        playerCollision();
+
+    }
+
+    private void playerCollision() {
+
+        /*
+        Colisiones del JUGADOR con otra cosa.
+        Las colisiones con la basura deben hacerse en el mismo metodo de la basura para evitar recorrer demasiadas
+        veces el array de basuras.
+         */
+
+        if(camion.collisionsWith(jugador.getHitboxX() + jugador.getDx(),jugador.getHitboxY() + jugador.getDy(),
+                                    jugador.getHitboxWidth(), jugador.getHitboxHeight()) == 1) {
+
+            directionalCollisionValidation(jugador, camion);
+        }
+
+        if(jugador.isCargandoBasura()) {
+            //Aqui irian todas las verificaciones de si esta depositando la basura en el vagon correcto.
+
+            if (boteAzul.collisionsWith(jugador.getHitboxX(), jugador.getHitboxY(), jugador.getHitboxWidth(),
+                    jugador.getHitboxHeight()) == 1) {
+
+                if(jugador.getBasura() instanceof BasuraPlastico)
+                {   // si la basura que lleva es plastico obtenr punto y gasolina
+                    accionCollisionBoteObtenerPunto(jugador.getBasura());
+                }
+                else {
+                    // si l a basura no es plastico se pierde punto y gasolina
+                    accionCollisionBotePierdePunto(jugador.getBasura());
+                }
+            }
+        }
+
+    }
+
+    private void camionCollision() {
+
+        //Esto es:  Se verifica si el camion llegaria a chocar con el jugador si el camion se moviera, en caso de no suceda
+        //se ejecuta su codigo de movimiento y tambien se mueve el mapa.
+
+        if(jugador.collisionsWith(camion.getHitboxX() + camion.getDx(), camion.getHitboxY() + camion.getDy(),
+                                      camion.getHitboxWidth(), camion.getHitboxHeight()) == 0                    ) {
+
+            camion.move();
+            boteAzul.move();
+            bg.setBackgroundX( -camion.getDistance() );
+        } else if(getCollisionDirection(camion, jugador) != Direccion.izquierda) {
+            camion.move();
+            boteAzul.move();
+            bg.setBackgroundX( -camion.getDistance() );
+        }
+    }
+
+    private void screenEdgesCollision() {
+
+        //En las esquinas puede hacer mas de una de estas condiciones al mismo tiempo. Dejan de ser else-if y se vuelven
+        //solo if's.
+
+        if(jugador.getX() + jugador.getDx() < 0){
+            jugador.setX(0);
+            jugador.setHitboxX(0);
+            jugador.setDx(0);
+        }
+
+        if(jugador.getY() + jugador.getDy() < 0){
+            jugador.setY(0);
+            jugador.setHitboxY(jugador.getHitboxHeight());
+            jugador.setDy(0);
+        }
+
+        if(jugador.getX() + jugador.getDx() > Main.WIDTH - ImageLoader.paradoArriba.getWidth()){
+            jugador.setX(Main.WIDTH - jugador.getWidth());
+            jugador.setHitboxX(Main.WIDTH - jugador.getHitboxWidth());
+            jugador.setDx(0);
+        }
+
+        if(jugador.getY() + jugador.getDy() > Main.HEIGHT - jugador.getHeight()) { //- ImageLoader.paradoArriba.getHeight()){
+            jugador.setY(Main.HEIGHT - jugador.getHeight());
+            jugador.setHitboxY(Main.HEIGHT- jugador.getHitboxHeight());
+            jugador.setDy(0);
+        }
+
+    }
+
+    public void checkBasuraCollisions() {
+        arrayBasura.getArrayBasura().forEach(basura -> {
+
+            //Colision para detectar si el jugador puede o no recoger la basura en cuestion.
+            if (basura.nextTo(jugador.getHitboxX(), jugador.getHitboxY(), jugador.getWidth(), jugador.getHeight(), Player.SPEED) == 1) {
+                basura.setNextToPlayer(true);
+            } else {
+                basura.setNextToPlayer(false);
+            }
+
+            if(jugador.collisionsWith(basura.getHitboxX() + basura.getDx(), basura.getHitboxY() + basura.getDy(),
+                                          basura.getHitboxWidth(), basura.getHitboxHeight()) == 0 || basura.isMoving())
+            {
+                basura.move();
+            }
+
+            if(basura.collisionsWith(jugador.getHitboxX() + jugador.getDx(), jugador.getHitboxY() + jugador.getDy(),
+                                        jugador.getHitboxWidth(), jugador.getHitboxHeight()) == 1 ) {
+
+                directionalCollisionValidation(jugador, basura);
+            }
+
+        });
+    }
+
+    //e1 es el que se mueve, e2 es con quien quieres verificar desde que direccion se le ha acercado el e1.
+
+    public Direccion getCollisionDirection(MovingIsoEntity e1, MovingIsoEntity e2) {
+
+        if(e1.getHitboxX() + e1.getDx() <= e2.getHitboxX() + e2.getHitboxWidth() &&
+           e1.getHitboxY() + e1.getHitboxHeight() >= e2.getHitboxY() &&
+           e1.getHitboxY() <= e2.getHitboxY() + e2.getHitboxHeight()) {
+            //Si choca por la derecha
+            return Direccion.derecha;
+        } else if(e1.getHitboxX() + e1.getHitboxWidth() + e1.getDx() >= e2.getHitboxX() &&
+                e1.getHitboxY() + e1.getHitboxHeight() >= e2.getHitboxY() &&
+                e1.getHitboxY() <= e2.getHitboxY() + e2.getHitboxHeight()) {
+            //Si choca por la izquierda
+            return Direccion.izquierda;
+        } else if(e1.getHitboxY() + e1.getDy() <= e2.getHitboxY() + e2.getHitboxHeight() &&
+                e1.getHitboxX() + e1.getHitboxWidth() >= e2.getHitboxX() &&
+                e1.getHitboxX() <= e2.getHitboxX() + e2.getHitboxWidth()) {
+            //Si choca por abajo
+            return Direccion.abajo;
+        } else if(e1.getHitboxY() + e1.getHitboxHeight() + e1.getDy() >= e2.getHitboxY() &&
+                e1.getHitboxX() + e1.getHitboxWidth() >= e2.getHitboxX() &&
+                e1.getHitboxX() <= e2.getHitboxX() + e2.getHitboxWidth()) {
+            //Si choca por arriba
+            return Direccion.arriba;
+        }
+
+        return null;
+    }
+
+    //e1 choca con e2
+    private void directionalCollisionValidation(MovingIsoEntity e1, MovingIsoEntity e2) {
+        Direccion direccionDeColision = getCollisionDirection(e1,e2);
+
+        if(direccionDeColision == Direccion.derecha || direccionDeColision == Direccion.izquierda) {
+            e1.setDx(0);
+        }
+
+        if(direccionDeColision == Direccion.arriba || direccionDeColision == Direccion.abajo) {
+            e1.setDy(0);
+        }
+
+    }
+
+    private void accionCollisionBoteObtenerPunto(Basura basura)
+    {
+        remove.add(basura);
+        camion.setGasolina(camion.getGasolina() + 30);
+        resultado.setPuntaje(resultado.getPuntaje()+1);
+        jugador.setCargandoBasura(false);
+        jugador.setBasura(null);
+    }
+
+    private void accionCollisionBotePierdePunto(Basura basura)
+    {
+        remove.add(basura);
+        camion.setGasolina(camion.getGasolina() - 30);
+        resultado.setPuntaje(resultado.getPuntaje()-1);
+        jugador.setCargandoBasura(false);
+        jugador.setBasura(null);
+    }
+
+
+
+    private void capturaNombreUsuario()
+    {
+        Task<Void> capturanombre = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                Platform.runLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        TextInputDialog dialog = new TextInputDialog("walter");
+                        dialog.setTitle("Nombre de jugador");
+
+                        dialog.setContentText("Por favor introduce tu nombre:");
+
+                        // Traditional way to get the response value.
+                        Optional<String> result = dialog.showAndWait();
+                        if (result.isPresent()){
+                            System.out.println("Your name: " + result.get());
+                            resultado.setName(result.get());
+                        }
+
+                        // The Java 8 way to get the response value (with lambda expression).
+                        result.ifPresent(name -> System.out.println("Your name: " + name));
+                        if(resultado.getPuntaje()>resultadoScore.getPuntaje())
+                        {
+                            AccionArchivo.escribir(resultado);
+                        }
+
+                    }
+                });
+
+                return null;
+            }
+        };
+        capturanombre.run();
+    }
     private void updatePlayerMovement() {
 
         //Tanto el touch como el teclado comparten funcionamiento, y se realizan cambios segun lo que se tenga presionado
@@ -700,58 +962,15 @@ public class Main extends Application {
 
          if(stateGame==StateGame.gameOver)
         {
-            texto.setText("Has perdido!!!!!!!!!!");
+
         }
+         if(stateGame==StateGame.resultado)
+         {
+             pintarResultado(gc);
+         }
 
     }
 
-    public void inicializaBotonMenu()
-    {
-        botonJugar.setOnTouchPressed(new EventHandler<TouchEvent>() {
-            @Override
-            public void handle(TouchEvent event) {
-                setStateGame(StateGame.playing);
-                addComponet();
-
-            }
-        });
-
-        botonJugar.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                setStateGame(StateGame.playing);
-                addComponet();
-            }
-        });
-
-        botonInstruccion.setOnTouchPressed(new EventHandler<TouchEvent>() {
-            @Override
-            public void handle(TouchEvent event) {
-                //Main.setStateGame(StateGame.playing);
-            }
-        });
-
-        botonInstruccion.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                //   Main.setStateGame(StateGame.playing);
-            }
-        });
-
-        botonSalir.setOnTouchPressed(new EventHandler<TouchEvent>() {
-            @Override
-            public void handle(TouchEvent event) {
-                System.exit(0);
-            }
-        });
-
-        botonSalir.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                System.exit(0);
-            }
-        });
-    }
 
     private void showProgressBar(GraphicsContext gc){
 
@@ -815,6 +1034,97 @@ public class Main extends Application {
         }
     }
 
+    public void inicializaBotonMenu()
+    {
+        botonJugar.setOnTouchPressed(new EventHandler<TouchEvent>() {
+            @Override
+            public void handle(TouchEvent event) {
+                setStateGame(StateGame.playing);
+                addComponet();
+
+            }
+        });
+
+        botonJugar.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                setStateGame(StateGame.playing);
+                addComponet();
+            }
+        });
+
+        botonInstruccion.setOnTouchPressed(new EventHandler<TouchEvent>() {
+            @Override
+            public void handle(TouchEvent event) {
+                //Main.setStateGame(StateGame.playing);
+            }
+        });
+
+        botonInstruccion.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                //   Main.setStateGame(StateGame.playing);
+            }
+        });
+
+        botonSalir.setOnTouchPressed(new EventHandler<TouchEvent>() {
+            @Override
+            public void handle(TouchEvent event) {
+                System.exit(0);
+            }
+        });
+
+        botonSalir.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                System.exit(0);
+            }
+        });
+
+        botonVolverMenu.setOnTouchPressed(new EventHandler<TouchEvent>() {
+            @Override
+            public void handle(TouchEvent event) {
+                setStateGame(StateGame.menu);
+                addComponet();
+            }
+        });
+
+        botonVolverMenu.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                setStateGame(StateGame.menu);
+                addComponet();
+            }
+        });
+    }
+    public void iniciarTexto()
+    {
+        textoNameScore=new Text();
+        textoName=new Text();
+        textoPuntajeScore=new Text();
+        textoPuntaje=new Text();
+        textoName.setX(250);
+        textoName.setY(350);
+        textoName.setFont(Font.font("Verdana",30));
+        textoPuntaje.setX(550);
+        textoPuntaje.setY(350);
+        textoPuntaje.setFont(Font.font("Verdana",30));
+        textoNameScore.setX(250);
+        textoNameScore.setY(250);
+        textoNameScore.setFont(Font.font("Verdana",30));
+        textoPuntajeScore.setX(550);
+        textoPuntajeScore.setY(250);
+        textoPuntajeScore.setFont(Font.font("Verdana",30));
+
+    }
+    private void pintarResultado(GraphicsContext gc){
+        bg.paintBackground(gc);
+        gc.drawImage(ImageLoader.spriteScore,200,150,633,300);
+        textoPuntajeScore.setText("PuntaleSocre:"+resultadoScore.getPuntaje());
+        textoPuntaje.setText("Puntaje:"+resultado.getPuntaje());
+        textoName.setText("Nombre:"+resultado.getName());
+        textoNameScore.setText("NameScore:"+resultadoScore.getName());
+    }
 
     public static Player getJugador() {
         return jugador;
