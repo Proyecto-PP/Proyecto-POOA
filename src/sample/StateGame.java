@@ -1,5 +1,5 @@
 package sample;
 
 public enum StateGame{
-    menu,playing,gameOver,resultado;
+    menu,playing,gameOver,resultado,instruccion;
 }

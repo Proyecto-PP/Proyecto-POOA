@@ -87,6 +87,9 @@ public class Main extends Application {
     private static int dashCooldown;        //En frames 60 frames - 1 seg
     private final double maxDashFrames = 10; //En Frames
     private double dashFrames;
+
+
+
     private Resultado resultado=new Resultado();
     private Resultado resultadoScore= new Resultado();
     private boolean intro = false;
@@ -268,8 +271,18 @@ public class Main extends Application {
             grupo.getChildren().addAll(botonA, botonB, dpad, texto);
         }
 
+        if(stateGame==StateGame.instruccion)
+        {
+            grupo.getChildren().addAll(botonVolverMenu);
+        }
+
+
         //else if? switch tal vez para cuando tengamos mas?
         if(stateGame==StateGame.gameOver)
+        {
+            grupo.getChildren().addAll(textoName,textoNameScore,textoPuntajeScore,textoPuntaje,botonVolverMenu);
+        }
+        if(stateGame==StateGame.resultado)
         {
             grupo.getChildren().addAll(textoName,textoNameScore,textoPuntajeScore,textoPuntaje,botonVolverMenu);
         }
@@ -318,6 +331,7 @@ public class Main extends Application {
             camion.move();
             bg.setBackgroundX( -camion.getDistance() );
             jugador.move();
+            resultado.setPuntaje(puntaje);
 
         }
         if(stateGame==StateGame.resultado)
@@ -676,7 +690,15 @@ public class Main extends Application {
 
         if(stateGame==StateGame.menu)
         {
+            bg.paintBackground(gc);
             gc.drawImage(ImageLoader.caminaderecho.getFrame(t),600,400,60,60);
+            gc.drawImage(ImageLoader.spriteProPlaneta,450,200);
+
+
+        }
+        else if(stateGame==StateGame.instruccion)
+        {
+            gc.drawImage(ImageLoader.spriteInstruccion,0,0,1024,600);
         }
         else if(stateGame == StateGame.playing)
         {
@@ -730,7 +752,7 @@ public class Main extends Application {
 
          if(stateGame==StateGame.gameOver)
         {
-
+            pintarResultado(gc);
         }
          if(stateGame==StateGame.resultado)
          {
@@ -823,14 +845,16 @@ public class Main extends Application {
         botonInstruccion.setOnTouchPressed(new EventHandler<TouchEvent>() {
             @Override
             public void handle(TouchEvent event) {
-                //Main.setStateGame(StateGame.playing);
+                Main.setStateGame(StateGame.instruccion);
+                addComponet();
             }
         });
 
         botonInstruccion.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent event) {
-                //   Main.setStateGame(StateGame.playing);
+                Main.setStateGame(StateGame.instruccion);
+                addComponet();
             }
         });
 
@@ -847,6 +871,23 @@ public class Main extends Application {
                 System.exit(0);
             }
         });
+
+        botonVolverMenu.setOnTouchPressed(new EventHandler<TouchEvent>() {
+            @Override
+            public void handle(TouchEvent event) {
+                Main.setStateGame(StateGame.menu);
+                addComponet();
+            }
+        });
+
+        botonVolverMenu.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                Main.setStateGame(StateGame.menu);
+                addComponet();
+            }
+        });
+
     }
 
     public void paintPlayer(GraphicsContext gc,double t)
@@ -909,10 +950,10 @@ public class Main extends Application {
     private void pintarResultado(GraphicsContext gc){
         bg.paintBackground(gc);
         gc.drawImage(ImageLoader.spriteScore,200,150,633,300);
-        textoPuntajeScore.setText("PuntaleSocre:"+resultadoScore.getPuntaje());
+        textoPuntajeScore.setText("High Socre:"+resultadoScore.getPuntaje());
         textoPuntaje.setText("Puntaje:"+resultado.getPuntaje());
         textoName.setText("Nombre:"+resultado.getName());
-        textoNameScore.setText("NameScore:"+resultadoScore.getName());
+        textoNameScore.setText("Name Score:"+resultadoScore.getName());
     }
 
     public static Player getJugador() {

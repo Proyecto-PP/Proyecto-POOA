@@ -26,6 +26,9 @@ public class VagonPapel extends Vagon {
             puntaje = 20;
         }
 
-        Main.setPuntaje(Main.getPuntaje() + puntaje);
+       if(puntaje>0)
+       {
+           Main.setPuntaje(Main.getPuntaje() + puntaje);
+       }
     }
 }

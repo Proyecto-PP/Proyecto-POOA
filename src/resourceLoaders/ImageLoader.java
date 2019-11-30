@@ -41,6 +41,8 @@ public final class ImageLoader {
     public final static Image spriteBotonSalir =new Image("file:resources//sprites//controller//botonSalir.png",100,150,true,false);
     public final static Image spriteBotonInstruccion =new Image("file:resources//sprites//controller//botonInstruccion.png",100,150,true,false);
     public final static Image spriteScore =new Image("file:resources//sprites//controller//Score.png");
+    public final static Image spriteInstruccion =new Image("file:resources//sprites//controller//Instruccion.png");
+    public final static Image spriteProPlaneta =new Image("file:resources//sprites//controller//ProPlaneta.png");
 
     public final static Image spriteCamion = getImage("camion.png", 2);
     public final static Image spriteBoteAzul= new Image("file:resources//sprites//objeto//BoteBasura.png");
