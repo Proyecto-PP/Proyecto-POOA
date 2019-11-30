@@ -45,8 +45,8 @@ public abstract class Basura extends MovingIsoEntity {
         }
         if(!moving)
         {
-            setX(getX() + getDx());
-            setHitboxX(getHitboxX() + getDx());
+            setX(getX() - Camion.SPEED);
+            setHitboxX(getHitboxX() - Camion.SPEED);
         }
     }
 }

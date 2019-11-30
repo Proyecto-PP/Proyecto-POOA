@@ -242,13 +242,14 @@ public class Main extends Application {
     private void showLevel(double t) {
 
         if (!shift) {
-            bg.setBackgroundX(bg.getBackgroundX() - 9);
+            bg.setBackgroundX(bg.getBackgroundX() - 11);
             if(bg.getBackgroundX()-(WIDTH+100) < -bg.getGameBg(1).getWidth())
                 shift = true;
         } else {
-            bg.setBackgroundX(bg.getBackgroundX() + 9);
+            bg.setBackgroundX(bg.getBackgroundX() + 11);
             if (bg.getBackgroundX() >= 0) {
                 bg.setBackgroundX(0);
+                shift = false;
                 intro = false;
             }
         }
@@ -691,7 +692,8 @@ public class Main extends Application {
                //Hasta aqui
            });
 
-            showProgressBar(gc);
+           if(!intro)
+                showProgressBar(gc);
         }
 
 
@@ -764,6 +766,7 @@ public class Main extends Application {
         if(progress >= 80){     //Si se llega al 80% del mapa
             if(bg.getCurrentMap()+1 < 4){   //Si no esta en el ultimo mapa
                 bg.setCurrentMap(bg.getCurrentMap()+1); //Pasar al siguiente
+                intro = true;
             }
             else{           //Si esta en el ultimo mapa
                 setStateGame(StateGame.gameOver);   //terminar el juego
