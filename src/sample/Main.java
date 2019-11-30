@@ -376,7 +376,7 @@ public class Main extends Application {
                     if (!jugador.isCargandoBasura()) {
 
                         for (Basura basura :
-                                Main.getArrayBasura().getArrayBasura()) {
+                                arrayBasura.getArrayBasura()) {
                             if (basura.isNextToPlayer() && !jugador.isCargandoBasura()) {      //Mas de una basura se podia mover
                                 jugador.setCargandoBasura(true);                               //por que no consideramos que el jugador
                                 basura.setMoving(true);                                 //podia volverse ocupado dentro de este mismo
