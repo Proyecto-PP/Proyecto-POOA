@@ -317,6 +317,7 @@ public class Main extends Application {
 
                     System.out.println(resultado.getName());
                     setStateGame(StateGame.resultado);
+                    capturaNombreUsuario();
                    addComponet();
 
             }
