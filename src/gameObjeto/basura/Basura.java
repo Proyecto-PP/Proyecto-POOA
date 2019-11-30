@@ -1,12 +1,11 @@
 package gameObjeto.basura;
 
 import entidades.MovingIsoEntity;
-import gameObjeto.Camion;
 import sample.Main;
 
 public abstract class Basura extends MovingIsoEntity {
     private boolean nextToPlayer;       //Todos los atributos se inicializan en 0, false o null cuando se instancia un objetp.
-    private boolean moving;
+    private boolean recogida;
 
     public Basura( double x, double y, double width, double height, double hitboxSize) {
         super( x, y, width, height, hitboxSize);
@@ -26,24 +25,24 @@ public abstract class Basura extends MovingIsoEntity {
         this.nextToPlayer = nextToPlayer;
     }
 
-    public boolean isMoving() {
-        return moving;
+    public boolean isRecogida() {
+        return recogida;
     }
 
-    public void setMoving(boolean moving) {
-        this.moving = moving;
+    public void setRecogida(boolean recogida) {
+        this.recogida = recogida;
     }
 
     @Override
     public void move() {
-        if(moving)
+        if(recogida)
         {
            setX(Main.getJugador().getX());
            setY(Main.getJugador().getY()-50);
            setHitboxX(Main.getJugador().getHitboxX());
            setHitboxY(Main.getJugador().getHitboxY()-50);
         }
-        if(!moving)
+        if(!recogida)
         {
             setX(getX() + getDx());
             setHitboxX(getHitboxX() + getDx());
