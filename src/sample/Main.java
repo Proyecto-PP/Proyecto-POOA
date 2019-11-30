@@ -240,9 +240,10 @@ public class Main extends Application {
     ////////////////////////////////////////////
 
     private void showLevel(double t) {
+
         if (!shift) {
             bg.setBackgroundX(bg.getBackgroundX() - 9);
-            if(bg.getBackgroundX()-(WIDTH+100) < -bg.getGameBg().getWidth())
+            if(bg.getBackgroundX()-(WIDTH+100) < -bg.getGameBg(1).getWidth())
                 shift = true;
         } else {
             bg.setBackgroundX(bg.getBackgroundX() + 9);
@@ -632,10 +633,12 @@ public class Main extends Application {
             {
                 setStateGame(StateGame.gameOver);
             }
-
-            if(bg.getBackgroundX() < -bg.getGameBg().getWidth() + WIDTH) {
+            /*
+            if(bg.getBackgroundX() < -bg.getGameBg(1).getWidth() + WIDTH) {
                 setStateGame(StateGame.gameOver);
             }
+
+            */
 
         }
     }
@@ -654,8 +657,6 @@ public class Main extends Application {
            arrayEntidad.forEach(objeto->
            {
                double objetoX = (objeto.getX()+bg.getBackgroundX() < 0 && !intro) ? 0:objeto.getX()+bg.getBackgroundX();
-
-
 
                if(objeto instanceof Player) paintPlayer(gc,t);
                else if(objeto instanceof BasuraBotella) gc.drawImage(ImageLoader.spritePlastico,(intro)? objetoX:objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
@@ -757,7 +758,20 @@ public class Main extends Application {
         gc.strokeRect(xPos,HEIGHT-25,150,10);
         gc.setFill(Color.WHITE);
 
-        double progress = -(bg.getBackgroundX()*100)/bg.getGameBg().getWidth();  //  Regla de 3 para % de progreso del nivel
+        double progress = -(bg.getBackgroundX()*100)/bg.getGameBg(1).getWidth();  //  Regla de 3 para % de progreso del nivel
+        System.out.printf("%.0f\r", progress);
+
+        if(progress >= 80){     //Si se llega al 80% del mapa
+            if(bg.getCurrentMap()+1 < 4){   //Si no esta en el ultimo mapa
+                bg.setCurrentMap(bg.getCurrentMap()+1); //Pasar al siguiente
+            }
+            else{           //Si esta en el ultimo mapa
+                setStateGame(StateGame.gameOver);   //terminar el juego
+            }
+
+            camion.setDistance(0);
+            bg.reset();
+        }
         double indicator = (progress*2)+xPos;          //  Regla de 3 para posicion del indicador en la barra
         gc.fillRect( (Math.min(indicator, xPos + 150)), HEIGHT-35,10,30);
     }

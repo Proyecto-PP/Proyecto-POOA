@@ -66,4 +66,8 @@ public class Camion extends MovingIsoEntity {
     public int getDistance() {
         return distance;
     }
+
+    public void setDistance(int distance) {
+        this.distance = distance;
+    }
 }
