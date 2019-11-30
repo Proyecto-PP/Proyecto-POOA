@@ -136,7 +136,7 @@ public class Main extends Application {
             }
         }.start();
 
-        reproductor.fadeInPlay(0.4);
+        reproductor.fadeInPlay(0.6);
 
         primaryStage.show();
     }
@@ -203,6 +203,23 @@ public class Main extends Application {
         };
     }
 
+    public void addComponet()
+    {
+        grupo.getChildren().clear();
+        grupo.getChildren().add(canvas);
+
+        if(stateGame==StateGame.playing)
+        {
+            grupo.getChildren().addAll(botonA, botonB, dpad, texto);
+        }
+
+        //else if? switch tal vez para cuando tengamos mas?
+        if(stateGame==StateGame.gameOver)
+        {
+
+        }
+    }
+
     ////////////////////////////////////////////
     /*          Bloque de setup [FIN]         */
     ////////////////////////////////////////////
@@ -233,230 +250,17 @@ public class Main extends Application {
 
             texto.setText("EL puntaje es:"+puntaje+"                                   Gasolina:"+String.format("%.1f",camion.getGasolina()/10));
 
-            //Este es el metodo que determina que acciones estas tomando segun lo que presiones en el teclado (movimiento y demas)
             updatePlayerMovement();
-
             collisionDetection();
+            updateEntitiesInScreen();
 
-            //Lista de elimianr (si es size de la lista eliminar se elimina)
-            if(remove.size()>0)
-            {
-                arrayBasura.getArrayBasura().removeAll(remove);
-                arrayEntidad.removeAll(remove);
-                //Faltaba poner que se limpiara cada vez que eliminaba los objetos que hacia falta eliminar.
-                remove.clear();
-            }
 
-            //Esto debe ir al ultimo por que se deben realizar todas las validaciones antes de darle permiso de cambiar
-            //su posicion.
-            /*
-            System.out.println(jugador.getHitboxX() + " " + jugador.getHitboxY());
-            System.out.println(camion.getHitboxX() + " " + camion.getHitboxY() + " - " +
-                    (camion.getHitboxX()+camion.getHitboxWidth()) + " " + (camion.getHitboxY()+camion.getHitboxHeight()) );
-
-             */
             jugador.move();
 
         }
 
         updateGameState();
 
-    }
-
-    private void updateGameState() {
-        if(stateGame == StateGame.playing) {
-
-            if(camion.getGasolina()<0)
-            {
-                setStateGame(StateGame.gameOver);
-            }
-
-            if(bg.getBackgroundX() < -bg.getGameBg().getWidth() + WIDTH) {
-                setStateGame(StateGame.gameOver);
-            }
-
-            if(stateGame==StateGame.gameOver)
-            {
-                texto.setText("perdimos");
-            }
-        }
-    }
-
-    private void collisionDetection() {
-
-        screenEdgesCollision();
-        camionCollision();
-        checkBasuraCollisions();
-        playerCollision();
-
-    }
-
-    private void playerCollision() {
-
-        /*
-        Colisiones del JUGADOR con otra cosa.
-        Las colisiones con la basura deben hacerse en el mismo metodo de la basura para evitar recorrer demasiadas
-        veces el array de basuras.
-         */
-
-        if(camion.collisionsWith(jugador.getHitboxX() + jugador.getDx(),jugador.getHitboxY() + jugador.getDy(),
-                                    jugador.getHitboxWidth(), jugador.getHitboxHeight()) == 1) {
-
-            directionalCollisionValidation(jugador, camion);
-        }
-
-        if(jugador.isCargandoBasura()) {
-            //Aqui irian todas las verificaciones de si esta depositando la basura en el vagon correcto.
-
-            if (boteAzul.collisionsWith(jugador.getHitboxX(), jugador.getHitboxY(), jugador.getHitboxWidth(),
-                    jugador.getHitboxHeight()) == 1) {
-
-                if(jugador.getBasura() instanceof BasuraPlastico)
-                {   // si la basura que lleva es plastico obtenr punto y gasolina
-                    accionCollisionBoteObtenerPunto(jugador.getBasura());
-                }
-                else {
-                    // si l a basura no es plastico se pierde punto y gasolina
-                    accionCollisionBotePierdePunto(jugador.getBasura());
-                }
-            }
-        }
-
-    }
-
-    private void camionCollision() {
-
-        //Esto es:  Se verifica si el camion llegaria a chocar con el jugador si el camion se moviera, en caso de no suceda
-        //se ejecuta su codigo de movimiento y tambien se mueve el mapa.
-
-        if(jugador.collisionsWith(camion.getHitboxX() + camion.getDx(), camion.getHitboxY() + camion.getDy(),
-                                      camion.getHitboxWidth(), camion.getHitboxHeight()) == 0                    ) {
-
-            camion.move();
-            boteAzul.move();
-            bg.setBackgroundX( -camion.getDistance() );
-        } else if(getCollisionDirection(camion, jugador) != Direccion.izquierda) {
-            camion.move();
-            boteAzul.move();
-            bg.setBackgroundX( -camion.getDistance() );
-        }
-    }
-
-    private void screenEdgesCollision() {
-
-        //En las esquinas puede hacer mas de una de estas condiciones al mismo tiempo. Dejan de ser else-if y se vuelven
-        //solo if's.
-
-        if(jugador.getX() + jugador.getDx() < 0){
-            jugador.setX(0);
-            jugador.setHitboxX(0);
-            jugador.setDx(0);
-        }
-
-        if(jugador.getY() + jugador.getDy() < 0){
-            jugador.setY(0);
-            jugador.setHitboxY(jugador.getHitboxHeight());
-            jugador.setDy(0);
-        }
-
-        if(jugador.getX() + jugador.getDx() > Main.WIDTH - ImageLoader.paradoArriba.getWidth()){
-            jugador.setX(Main.WIDTH - jugador.getWidth());
-            jugador.setHitboxX(Main.WIDTH - jugador.getHitboxWidth());
-            jugador.setDx(0);
-        }
-
-        if(jugador.getY() + jugador.getDy() > Main.HEIGHT - jugador.getHeight()) { //- ImageLoader.paradoArriba.getHeight()){
-            jugador.setY(Main.HEIGHT - jugador.getHeight());
-            jugador.setHitboxY(Main.HEIGHT- jugador.getHitboxHeight());
-            jugador.setDy(0);
-        }
-
-    }
-
-    public void checkBasuraCollisions() {
-        arrayBasura.getArrayBasura().forEach(basura -> {
-
-            //Colision para detectar si el jugador puede o no recoger la basura en cuestion.
-            if (basura.nextTo(jugador.getHitboxX(), jugador.getHitboxY(), jugador.getWidth(), jugador.getHeight(), Player.SPEED) == 1) {
-                basura.setNextToPlayer(true);
-            } else {
-                basura.setNextToPlayer(false);
-            }
-
-            if(jugador.collisionsWith(basura.getHitboxX() + basura.getDx(), basura.getHitboxY() + basura.getDy(),
-                                          basura.getHitboxWidth(), basura.getHitboxHeight()) == 0 || basura.isMoving())
-            {
-                basura.move();
-            }
-
-            if(basura.collisionsWith(jugador.getHitboxX() + jugador.getDx(), jugador.getHitboxY() + jugador.getDy(),
-                                        jugador.getHitboxWidth(), jugador.getHitboxHeight()) == 1 ) {
-
-                directionalCollisionValidation(jugador, basura);
-            }
-
-        });
-    }
-
-    //e1 es el que se mueve, e2 es con quien quieres verificar desde que direccion se le ha acercado el e1.
-
-    public Direccion getCollisionDirection(MovingIsoEntity e1, MovingIsoEntity e2) {
-
-        if(e1.getHitboxX() + e1.getDx() <= e2.getHitboxX() + e2.getHitboxWidth() &&
-           e1.getHitboxY() + e1.getHitboxHeight() >= e2.getHitboxY() &&
-           e1.getHitboxY() <= e2.getHitboxY() + e2.getHitboxHeight()) {
-            //Si choca por la derecha
-            return Direccion.derecha;
-        } else if(e1.getHitboxX() + e1.getHitboxWidth() + e1.getDx() >= e2.getHitboxX() &&
-                e1.getHitboxY() + e1.getHitboxHeight() >= e2.getHitboxY() &&
-                e1.getHitboxY() <= e2.getHitboxY() + e2.getHitboxHeight()) {
-            //Si choca por la izquierda
-            return Direccion.izquierda;
-        } else if(e1.getHitboxY() + e1.getDy() <= e2.getHitboxY() + e2.getHitboxHeight() &&
-                e1.getHitboxX() + e1.getHitboxWidth() >= e2.getHitboxX() &&
-                e1.getHitboxX() <= e2.getHitboxX() + e2.getHitboxWidth()) {
-            //Si choca por abajo
-            return Direccion.abajo;
-        } else if(e1.getHitboxY() + e1.getHitboxHeight() + e1.getDy() >= e2.getHitboxY() &&
-                e1.getHitboxX() + e1.getHitboxWidth() >= e2.getHitboxX() &&
-                e1.getHitboxX() <= e2.getHitboxX() + e2.getHitboxWidth()) {
-            //Si choca por arriba
-            return Direccion.arriba;
-        }
-
-        return null;
-    }
-
-    //e1 choca con e2
-    private void directionalCollisionValidation(MovingIsoEntity e1, MovingIsoEntity e2) {
-        Direccion direccionDeColision = getCollisionDirection(e1,e2);
-
-        if(direccionDeColision == Direccion.derecha || direccionDeColision == Direccion.izquierda) {
-            e1.setDx(0);
-        }
-
-        if(direccionDeColision == Direccion.arriba || direccionDeColision == Direccion.abajo) {
-            e1.setDy(0);
-        }
-
-    }
-
-    private void accionCollisionBoteObtenerPunto(Basura basura)
-    {
-        remove.add(basura);
-        camion.setGasolina(camion.getGasolina() + 30);
-        puntaje++;
-        jugador.setCargandoBasura(false);
-        jugador.setBasura(null);
-    }
-
-    private void accionCollisionBotePierdePunto(Basura basura)
-    {
-        remove.add(basura);
-        camion.setGasolina(camion.getGasolina() - 30);
-        puntaje--;
-        jugador.setCargandoBasura(false);
-        jugador.setBasura(null);
     }
 
     private void updatePlayerMovement() {
@@ -604,11 +408,6 @@ public class Main extends Application {
 
         } else {
 
-            //Si el jugador está haciendo un dash no deberia de poder moverse por en medio.
-
-            //Se usa un contador para saber cuanto tiempo estara en el estado del dash. Y hasta que no llegue
-            //a un limite [maxDashFrames] se suma 1 a ese contador. Cuando dashFrames llega a maxDashFrames, se saca
-            //al jugador del estado de "dashing" y se ponen 60 frames [1 segundo] de cooldown al dash.
             if(dashFrames != maxDashFrames) {
                 if(dashFrames == 0) {
                     jugador.setDx(jugador.getDx() * DASH_SPEED_MULT);
@@ -616,16 +415,214 @@ public class Main extends Application {
                 }
                 dashFrames++;
             } else {
-                resetDashStatus();
+                jugador.setDashing(false);
+                dashFrames = 0;
+                dashCooldown = 30;     //son 60 frames - 1 seg
             }
         }
 
     }
 
-    public void resetDashStatus() {
-        jugador.setDashing(false);
-        dashFrames = 0;
-        dashCooldown = 30;     //son 60 frames - 1 seg
+    private void collisionDetection() {
+
+        screenEdgesCollision();
+        camionCollision();
+        checkBasuraCollisions();
+        playerCollision();
+
+    }
+
+    private void screenEdgesCollision() {
+
+        //En las esquinas puede hacer mas de una de estas condiciones al mismo tiempo. Dejan de ser else-if y se vuelven
+        //solo if's.
+
+        if(jugador.getX() + jugador.getDx() < 0){
+            jugador.setX(0);
+            jugador.setHitboxX(0);
+            jugador.setDx(0);
+        }
+
+        if(jugador.getY() + jugador.getDy() < 0){
+            jugador.setY(0);
+            jugador.setHitboxY(jugador.getHitboxHeight());
+            jugador.setDy(0);
+        }
+
+        if(jugador.getX() + jugador.getDx() > Main.WIDTH - ImageLoader.paradoArriba.getWidth()){
+            jugador.setX(Main.WIDTH - jugador.getWidth());
+            jugador.setHitboxX(Main.WIDTH - jugador.getHitboxWidth());
+            jugador.setDx(0);
+        }
+
+        if(jugador.getY() + jugador.getDy() > Main.HEIGHT - jugador.getHeight()) { //- ImageLoader.paradoArriba.getHeight()){
+            jugador.setY(Main.HEIGHT - jugador.getHeight());
+            jugador.setHitboxY(Main.HEIGHT - jugador.getHitboxHeight());
+            jugador.setDy(0);
+        }
+
+    }
+
+    private void camionCollision() {
+
+        //Esto es:  Se verifica si el camion llegaria a chocar con el jugador si el camion se moviera, en caso de no suceda
+        //se ejecuta su codigo de movimiento y tambien se mueve el mapa.
+
+        if(jugador.collisionsWith(camion.getHitboxX() + camion.getDx(), camion.getHitboxY() + camion.getDy(),
+                                      camion.getHitboxWidth(), camion.getHitboxHeight()) == 0                    ) {
+
+            camion.move();
+            boteAzul.move();
+            bg.setBackgroundX( -camion.getDistance() );
+        } else if(getCollisionDirection(camion, jugador) != Direccion.izquierda) {
+            camion.move();
+            boteAzul.move();
+            bg.setBackgroundX( -camion.getDistance() );
+        }
+    }
+
+    public void checkBasuraCollisions() {
+        arrayBasura.getArrayBasura().forEach(basura -> {
+
+            //Colision para detectar si el jugador puede o no recoger la basura en cuestion.
+            if (basura.nextTo(jugador.getHitboxX(), jugador.getHitboxY(), jugador.getWidth(), jugador.getHeight(), Player.SPEED) == 1) {
+                basura.setNextToPlayer(true);
+            } else {
+                basura.setNextToPlayer(false);
+            }
+
+            if(jugador.collisionsWith(basura.getHitboxX() + basura.getDx(), basura.getHitboxY() + basura.getDy(),
+                                          basura.getHitboxWidth(), basura.getHitboxHeight()) == 0 || basura.isMoving())
+            {
+                basura.move();
+            }
+
+            if(basura.collisionsWith(jugador.getHitboxX() + jugador.getDx(), jugador.getHitboxY() + jugador.getDy(),
+                                        jugador.getHitboxWidth(), jugador.getHitboxHeight()) == 1 ) {
+
+                directionalCollisionValidation(jugador, basura);
+            }
+
+        });
+    }
+
+    private void playerCollision() {
+
+        /*
+        Colisiones del JUGADOR con otra cosa.
+        Las colisiones con la basura deben hacerse en el mismo metodo de la basura para evitar recorrer demasiadas
+        veces el array de basuras.
+         */
+
+        if(camion.collisionsWith(jugador.getHitboxX() + jugador.getDx(),jugador.getHitboxY() + jugador.getDy(),
+                jugador.getHitboxWidth(), jugador.getHitboxHeight()) == 1) {
+
+            directionalCollisionValidation(jugador, camion);
+        }
+
+        if(jugador.isCargandoBasura()) {
+            //Aqui irian todas las verificaciones de si esta depositando la basura en el vagon correcto.
+
+            if (boteAzul.collisionsWith(jugador.getHitboxX(), jugador.getHitboxY(), jugador.getHitboxWidth(),
+                    jugador.getHitboxHeight()) == 1) {
+
+                if(jugador.getBasura() instanceof BasuraPlastico)
+                {   // si la basura que lleva es plastico obtenr punto y gasolina
+                    accionCollisionBoteObtenerPunto(jugador.getBasura());
+                }
+                else {
+                    // si l a basura no es plastico se pierde punto y gasolina
+                    accionCollisionBotePierdePunto(jugador.getBasura());
+                }
+            }
+        }
+
+    }
+
+    //e1 es el que se mueve, e2 es con quien quieres verificar desde que direccion se le ha acercado el e1.
+
+    public Direccion getCollisionDirection(MovingIsoEntity e1, MovingIsoEntity e2) {
+
+        if(e1.getHitboxX() + e1.getDx() <= e2.getHitboxX() + e2.getHitboxWidth() &&
+           e1.getHitboxY() + e1.getHitboxHeight() >= e2.getHitboxY() &&
+           e1.getHitboxY() <= e2.getHitboxY() + e2.getHitboxHeight()) {
+            //Si choca por la derecha
+            return Direccion.derecha;
+        } else if(e1.getHitboxX() + e1.getHitboxWidth() + e1.getDx() >= e2.getHitboxX() &&
+                e1.getHitboxY() + e1.getHitboxHeight() >= e2.getHitboxY() &&
+                e1.getHitboxY() <= e2.getHitboxY() + e2.getHitboxHeight()) {
+            //Si choca por la izquierda
+            return Direccion.izquierda;
+        } else if(e1.getHitboxY() + e1.getDy() <= e2.getHitboxY() + e2.getHitboxHeight() &&
+                e1.getHitboxX() + e1.getHitboxWidth() >= e2.getHitboxX() &&
+                e1.getHitboxX() <= e2.getHitboxX() + e2.getHitboxWidth()) {
+            //Si choca por abajo
+            return Direccion.abajo;
+        } else if(e1.getHitboxY() + e1.getHitboxHeight() + e1.getDy() >= e2.getHitboxY() &&
+                e1.getHitboxX() + e1.getHitboxWidth() >= e2.getHitboxX() &&
+                e1.getHitboxX() <= e2.getHitboxX() + e2.getHitboxWidth()) {
+            //Si choca por arriba
+            return Direccion.arriba;
+        }
+
+        return null;
+    }
+
+    //e1 choca con e2
+    private void directionalCollisionValidation(MovingIsoEntity e1, MovingIsoEntity e2) {
+        Direccion direccionDeColision = getCollisionDirection(e1,e2);
+
+        if(direccionDeColision == Direccion.derecha || direccionDeColision == Direccion.izquierda) {
+            e1.setDx(0);
+        }
+
+        if(direccionDeColision == Direccion.arriba || direccionDeColision == Direccion.abajo) {
+            e1.setDy(0);
+        }
+
+    }
+
+    private void accionCollisionBoteObtenerPunto(Basura basura)
+    {
+        remove.add(basura);
+        camion.setGasolina(camion.getGasolina() + 30);
+        puntaje++;
+        jugador.setCargandoBasura(false);
+        jugador.setBasura(null);
+    }
+
+    private void accionCollisionBotePierdePunto(Basura basura)
+    {
+        remove.add(basura);
+        camion.setGasolina(camion.getGasolina() - 30);
+        puntaje--;
+        jugador.setCargandoBasura(false);
+        jugador.setBasura(null);
+    }
+
+    private void updateEntitiesInScreen() {
+        //Lista de elimianr (si es size de la lista eliminar se elimina)
+        if(remove.size()>0)
+        {
+            arrayBasura.getArrayBasura().removeAll(remove);
+            arrayEntidad.removeAll(remove);
+            remove.clear();
+        }
+    }
+
+    private void updateGameState() {
+        if(stateGame == StateGame.playing) {
+
+            if(camion.getGasolina()<0)
+            {
+                setStateGame(StateGame.gameOver);
+            }
+
+            if(bg.getBackgroundX() < -bg.getGameBg().getWidth() + WIDTH) {
+                setStateGame(StateGame.gameOver);
+            }
+
+        }
     }
 
     public void updateGraphic(GraphicsContext gc,double t)
@@ -683,25 +680,6 @@ public class Main extends Application {
             texto.setText("Has perdido!!!!!!!!!!");
         }
 
-    }
-
-
-
-    public void addComponet()
-    {
-        grupo.getChildren().clear();
-        grupo.getChildren().add(canvas);
-
-        if(stateGame==StateGame.playing)
-        {
-            grupo.getChildren().addAll(botonA, botonB, dpad, texto);
-        }
-
-        //else if? switch tal vez para cuando tengamos mas?
-        if(stateGame==StateGame.gameOver)
-        {
-
-        }
     }
 
     private void showProgressBar(GraphicsContext gc){
