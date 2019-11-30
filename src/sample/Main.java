@@ -1,5 +1,7 @@
 package sample;
 
+import archivoSeriazable.AccionArchivo;
+import archivoSeriazable.Resultado;
 import botones.Button;
 import controller.ControlInput;
 import controller.ControlsSetup;
@@ -24,6 +26,8 @@ import gameObjeto.boteBasura.BoteBasura;
 import gameObjeto.boteBasura.BotePlastico;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.concurrent.Task;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
@@ -43,7 +47,10 @@ import resourceLoaders.AudioLoader;
 import resourceLoaders.ImageLoader;
 import teclado.TecladoFX;
 
-import javax.swing.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.util.*;
 
 
@@ -69,6 +76,7 @@ public class Main extends Application {
     public static Button botonJugar=new Button(300,200,50,60, ImageLoader.spriteBotonJugar);
     public static Button botonInstruccion=new Button(300,300,50,60, ImageLoader.spriteBotonInstruccion);
     public static Button botonSalir=new Button(300,400,50,60, ImageLoader.spriteBotonSalir);
+    public static Button botonVolverMenu=new Button(550,500,50,60, ImageLoader.spriteBotonJugar);
 
     final long startNanoTime = System.nanoTime();
 
@@ -77,7 +85,8 @@ public class Main extends Application {
     private static int dashCooldown;        //En frames 60 frames - 1 seg
     private final double maxDashFrames = 10; //En Frames
     private double dashFrames;
-
+    private Resultado resultado=new Resultado();
+    private Resultado resultadoScore= new Resultado();
     private boolean intro = false;
     private boolean shift = false;  //False = derecha
 
@@ -99,9 +108,11 @@ public class Main extends Application {
     private Background bg;
 
     private Comparator cmpArrayEntidad;
-
-    public int i;
+    //captura de nombre de usuario
     TextInputDialog dialog = new TextInputDialog("walter");
+    Text textoPuntaje,textoName,textoPuntajeScore,textoNameScore;
+    //contador de captura
+    boolean captura=true;
 
     @Override
     public void init() throws Exception {
@@ -114,6 +125,7 @@ public class Main extends Application {
         initializeArrayEntidad();
         initializeUtilities();
         inicializaBotonMenu();
+        iniciarTexto();
 
         arrayEntidad.sort(cmpArrayEntidad);    //Le hacemos un sort antes de empezar para que no tarde la primera vez que lo haga
                                                             //dentro del juego
@@ -123,6 +135,7 @@ public class Main extends Application {
         texto.setY(40);
         texto.setFont(Font.font("Verdana", 30));
 
+        resultadoScore=AccionArchivo.leer();
         addComponet();
 
     }
@@ -130,11 +143,7 @@ public class Main extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         setupPrimaryStage(primaryStage);
-   /*   componente grafico para capturar nombre
-        Optional<String> result = dialog.showAndWait();
-        if (result.isPresent()){
-            System.out.println("Your name: " + result.get());
-        }*/
+
         new AnimationTimer() {
             @Override
             public void handle(long now) {
@@ -146,7 +155,11 @@ public class Main extends Application {
                 else {
                     updateLogic();
                     updateGraphic(gc, t);
-                //    System.out.println(result.get());
+                   // System.out.println(resultadoScore.getName());
+                  //  System.out.println(captura);
+
+
+
                 }
             }
         }.start();
@@ -240,13 +253,17 @@ public class Main extends Application {
 
     public void updateLogic()
     {
+        if(stateGame==StateGame.menu)
+        {
+
+        }
 
         if(stateGame==StateGame.playing)
         {
 
             Collections.sort(arrayEntidad, cmpArrayEntidad);    //Instancie el comparador en el initializeUtilities para que no se cree uno nuevo cada vez.
 
-            texto.setText("EL puntaje es:"+puntaje+"                                   Gasolina:"+String.format("%.1f",camion.getGasolina()/10));
+            texto.setText("EL puntaje es:"+resultado.getPuntaje()+"                                   Gasolina:"+String.format("%.1f",camion.getGasolina()));
 
             //Este es el metodo que determina que acciones estas tomando segun lo que presiones en el teclado (movimiento y demas)
             updatePlayerMovement();
@@ -273,6 +290,10 @@ public class Main extends Application {
             jugador.move();
 
         }
+        if(stateGame==StateGame.resultado)
+        {
+
+        }
 
         updateGameState();
 
@@ -282,8 +303,9 @@ public class Main extends Application {
         if(stateGame == StateGame.playing) {
 
             if(camion.getGasolina()<0)
-            {
-                setStateGame(StateGame.gameOver);
+            {  setStateGame(StateGame.gameOver);
+
+
             }
 
             if(bg.getBackgroundX() < -bg.getGameBg().getWidth() + WIDTH) {
@@ -292,10 +314,15 @@ public class Main extends Application {
 
             if(stateGame==StateGame.gameOver)
             {
-                texto.setText("perdimos");
+
+                    System.out.println(resultado.getName());
+                    setStateGame(StateGame.resultado);
+                   addComponet();
+
+            }
             }
         }
-    }
+
 
     private void collisionDetection() {
 
@@ -460,7 +487,7 @@ public class Main extends Application {
     {
         remove.add(basura);
         camion.setGasolina(camion.getGasolina() + 30);
-        puntaje++;
+        resultado.setPuntaje(resultado.getPuntaje()+1);
         jugador.setCargandoBasura(false);
         jugador.setBasura(null);
     }
@@ -469,11 +496,49 @@ public class Main extends Application {
     {
         remove.add(basura);
         camion.setGasolina(camion.getGasolina() - 30);
-        puntaje--;
+        resultado.setPuntaje(resultado.getPuntaje()-1);
         jugador.setCargandoBasura(false);
         jugador.setBasura(null);
     }
 
+
+
+    private void capturaNombreUsuario()
+    {
+        Task<Void> capturanombre = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                Platform.runLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        TextInputDialog dialog = new TextInputDialog("walter");
+                        dialog.setTitle("Nombre de jugador");
+
+                        dialog.setContentText("Por favor introduce tu nombre:");
+
+                        // Traditional way to get the response value.
+                        Optional<String> result = dialog.showAndWait();
+                        if (result.isPresent()){
+                            System.out.println("Your name: " + result.get());
+                            resultado.setName(result.get());
+                        }
+
+                        // The Java 8 way to get the response value (with lambda expression).
+                        result.ifPresent(name -> System.out.println("Your name: " + name));
+                        if(resultado.getPuntaje()>resultadoScore.getPuntaje())
+                        {
+                            AccionArchivo.escribir(resultado);
+                        }
+
+                    }
+                });
+
+                return null;
+            }
+        };
+        capturanombre.run();
+    }
     private void updatePlayerMovement() {
 
         //Tanto el touch como el teclado comparten funcionamiento, y se realizan cambios segun lo que se tenga presionado
@@ -646,6 +711,10 @@ public class Main extends Application {
     public void updateGraphic(GraphicsContext gc,double t)
     {
         gc.clearRect(0,0,WIDTH,HEIGHT);
+        if(stateGame==StateGame.menu)
+        {
+
+        }
         if(stateGame == StateGame.playing)
         {
            bg.paintBackground(gc);
@@ -695,8 +764,12 @@ public class Main extends Application {
 
          if(stateGame==StateGame.gameOver)
         {
-            texto.setText("Has perdido!!!!!!!!!!");
+
         }
+         if(stateGame==StateGame.resultado)
+         {
+             pintarResultado(gc);
+         }
 
     }
 
@@ -710,6 +783,7 @@ public class Main extends Application {
         if(stateGame==StateGame.menu)
         {
             grupo.getChildren().addAll(botonInstruccion,botonJugar,botonSalir);
+
         }
 
         else if(stateGame==StateGame.playing)
@@ -718,10 +792,11 @@ public class Main extends Application {
         }
 
         //else if? switch tal vez para cuando tengamos mas?
-        if(stateGame==StateGame.gameOver)
-        {
+        else if(stateGame==StateGame.resultado){
+            grupo.getChildren().addAll(textoName,textoNameScore,textoPuntajeScore,textoPuntaje,botonVolverMenu);
 
         }
+
     }
 
     private void showProgressBar(GraphicsContext gc){
@@ -818,8 +893,51 @@ public class Main extends Application {
                 System.exit(0);
             }
         });
-    }
 
+        botonVolverMenu.setOnTouchPressed(new EventHandler<TouchEvent>() {
+            @Override
+            public void handle(TouchEvent event) {
+                setStateGame(StateGame.menu);
+                addComponet();
+            }
+        });
+
+        botonVolverMenu.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                setStateGame(StateGame.menu);
+                addComponet();
+            }
+        });
+    }
+    public void iniciarTexto()
+    {
+        textoNameScore=new Text();
+        textoName=new Text();
+        textoPuntajeScore=new Text();
+        textoPuntaje=new Text();
+        textoName.setX(250);
+        textoName.setY(350);
+        textoName.setFont(Font.font("Verdana",30));
+        textoPuntaje.setX(550);
+        textoPuntaje.setY(350);
+        textoPuntaje.setFont(Font.font("Verdana",30));
+        textoNameScore.setX(250);
+        textoNameScore.setY(250);
+        textoNameScore.setFont(Font.font("Verdana",30));
+        textoPuntajeScore.setX(550);
+        textoPuntajeScore.setY(250);
+        textoPuntajeScore.setFont(Font.font("Verdana",30));
+
+    }
+    private void pintarResultado(GraphicsContext gc){
+        bg.paintBackground(gc);
+        gc.drawImage(ImageLoader.spriteScore,200,150,633,300);
+        textoPuntajeScore.setText("PuntaleSocre:"+resultadoScore.getPuntaje());
+        textoPuntaje.setText("Puntaje:"+resultado.getPuntaje());
+        textoName.setText("Nombre:"+resultado.getName());
+        textoNameScore.setText("NameScore:"+resultadoScore.getName());
+    }
 
     public static Player getJugador() {
         return jugador;
