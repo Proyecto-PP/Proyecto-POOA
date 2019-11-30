@@ -589,7 +589,7 @@ public class Main extends Application {
     }
     //e1 es el que se mueve, e2 es con quien quieres verificar desde que direccion se le ha acercado el e1.
 
-    public Direccion getCollisionDirection(MovingIsoEntity e1, MovingIsoEntity e2) {
+    public Direccion getCollisionDirection(MovingIsoEntity e1, IsometricEntity e2) {
 
         if(e1.getHitboxX() + e1.getDx() <= e2.getHitboxX() + e2.getHitboxWidth() &&
            e1.getHitboxY() + e1.getHitboxHeight() >= e2.getHitboxY() &&
@@ -617,7 +617,7 @@ public class Main extends Application {
     }
 
     //e1 choca con e2
-    private void directionalCollisionValidation(MovingIsoEntity e1, MovingIsoEntity e2) {
+    private void directionalCollisionValidation(MovingIsoEntity e1, IsometricEntity e2) {
         Direccion direccionDeColision = getCollisionDirection(e1,e2);
 
         if(direccionDeColision == Direccion.derecha || direccionDeColision == Direccion.izquierda) {
@@ -654,7 +654,7 @@ public class Main extends Application {
                 setStateGame(StateGame.gameOver);
             }
 
-            if(bg.getBackgroundX() < -bg.getGameBg().getWidth() + WIDTH) {
+            if(bg.getBackgroundX() < -bg.getGameBg(1).getWidth() + WIDTH) {
                 setStateGame(StateGame.gameOver);
             }
             if(stateGame==StateGame.gameOver)
@@ -709,8 +709,8 @@ public class Main extends Application {
                *    Esto es para verificar en que lugar estan las hitbox, no lo quiten hasta la entrega.
                 */
 
-               gc.setStroke(Color.BLACK);
-               gc.strokeRect(objeto.getX(), objeto.getY(), objeto.getWidth(), objeto.getHeight());
+               //gc.setStroke(Color.BLACK);
+               //gc.strokeRect(objeto.getX(), objeto.getY(), objeto.getWidth(), objeto.getHeight());
 
                if(objeto instanceof IsometricEntity) {
                    IsometricEntity b = (IsometricEntity) objeto;
@@ -753,7 +753,7 @@ public class Main extends Application {
         if(progress >= 80){     //Si se llega al 80% del mapa
             if(bg.getCurrentMap()+1 < 4){   //Si no esta en el ultimo mapa
                 bg.setCurrentMap(bg.getCurrentMap()+1); //Pasar al siguiente
-                intro = true;
+                //intro = true;
             }
             else{           //Si esta en el ultimo mapa
                 setStateGame(StateGame.gameOver);   //terminar el juego
@@ -764,8 +764,6 @@ public class Main extends Application {
         }
         double indicator = (progress*2)+xPos;          //  Regla de 3 para posicion del indicador en la barra
         gc.fillRect( (Math.min(indicator, xPos + 150)), HEIGHT-35,10,30);
-    }
-
     }
 
     private void capturaNombreUsuario()

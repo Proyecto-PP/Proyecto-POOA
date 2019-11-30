@@ -1,6 +1,7 @@
 package gameObjeto.basura;
 
 import entidades.MovingIsoEntity;
+import gameObjeto.Camion;
 import sample.Main;
 
 public abstract class Basura extends MovingIsoEntity {
