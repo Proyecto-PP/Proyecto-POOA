@@ -3,6 +3,11 @@ package resourceLoaders;
 import display.AnimatedImage;
 import javafx.scene.image.Image;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
 public final class ImageLoader {
 
     /*Las imagenes que utilicen ImageView para mostrarse DEBEN ser cargadas con el tamaño que deseas por default.
@@ -37,8 +42,13 @@ public final class ImageLoader {
     public final static Image spriteBotonInstruccion =new Image("file:resources//sprites//controller//botonInstruccion.png",100,150,true,false);
     public final static Image spriteScore =new Image("file:resources//sprites//controller//Score.png");
 
-    public final static Image spriteCamion=new Image("file:resources//sprites//objeto//Camion.png");
+    public final static Image spriteCamion = getImage("camion.png", 2);
     public final static Image spriteBoteAzul= new Image("file:resources//sprites//objeto//BoteBasura.png");
+    public final static Image spriteVagonOrganico= getImage("vagon_verde.png", 2);
+    public final static Image spriteVagonPapel= getImage("vagon_amarillo.png", 2);
+    public final static Image spriteVagonPlastico= getImage("vagon_rojo.png", 2);
+    public final static Image spriteVagonVidrio= getImage("vagon_azul.png", 2);
+
     public final static Image[][] arrayImage = new Image[4][4];
 
     public static Image[] TILES;
@@ -76,6 +86,24 @@ public final class ImageLoader {
 
     }
 
+    private static Image getImage(String file, int scale) {
+        String filePath = "resources//sprites//objeto//" + file;
 
+        BufferedImage img = null;
+
+        try {
+            img = ImageIO.read(new File(filePath));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Image image = null;
+
+        if(img != null) {
+            image = new Image("file:" + filePath, img.getWidth()*scale, img.getHeight()*scale,true, false);
+        }
+
+        return image;
+    }
 
 }

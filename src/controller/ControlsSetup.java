@@ -43,7 +43,7 @@ public final class ControlsSetup {
                         Main.getArrayBasura().getArrayBasura()) {
                     if(basura.isNextToPlayer())
                     {
-                        basura.setMoving(true);
+                        basura.setRecogida(true);
 
                         Main.getJugador().setCargandoBasura(true);
                     }
@@ -51,9 +51,9 @@ public final class ControlsSetup {
             } else if(Main.getJugador().isCargandoBasura()) {
                 for (Basura basura:
                         Main.getArrayBasura().getArrayBasura()){
-                    if(basura.isMoving())
+                    if(basura.isRecogida())
                     {
-                        basura.setMoving(false);
+                        basura.setRecogida(false);
                         //basura.setCollision(false);
                         Main.getJugador().setCargandoBasura(false);
                     }

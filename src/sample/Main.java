@@ -8,6 +8,7 @@ import controller.ControlsSetup;
 
 import display.Background;
 import entidades.Entity;
+import entidades.IsometricEntity;
 import entidades.MovingIsoEntity;
 import gameObjeto.*;
 import gameObjeto.basura.Basura;
@@ -18,12 +19,12 @@ import gameObjeto.basura.basuraPapel.BasuraBolaPapel;
 import gameObjeto.basura.basuraPapel.BasuraPapelAvion;
 import gameObjeto.basura.basuraPapel.BasuraPeriodico;
 import gameObjeto.basura.basuraPlastico.BasuraBotella;
-import gameObjeto.basura.basuraPlastico.BasuraPlastico;
 import gameObjeto.basura.basuraVidrio.BasuraBotellaRoto;
 import gameObjeto.basura.basuraVidrio.BasuraFoco;
 import gameObjeto.basura.basuraVidrio.BasuraVentanaRoto;
 import gameObjeto.boteBasura.BoteBasura;
 import gameObjeto.boteBasura.BotePlastico;
+import gameObjeto.vagones.*;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -52,6 +53,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.*;
+import java.util.List;
 
 
 public class Main extends Application {
@@ -90,7 +92,7 @@ public class Main extends Application {
     private boolean intro = false;
     private boolean shift = false;  //False = derecha
 
-    private int puntaje;        //puntaje, como es un atributo de clase, se inicializa en 0 por default.
+    private static int puntaje;        //puntaje, como es un atributo de clase, se inicializa en 0 por default.
     Text texto = new Text();
 
     /*
@@ -99,8 +101,29 @@ public class Main extends Application {
     *  te libras de cosas redundantes como Main.getArrayBasura().getArrayBasura(); [TouchControl : 32]
     */
     private static ArrayBasura arrayBasura = new ArrayBasura();
-    private static Player jugador = new Player( 100, 100, 32, 48, 0.5);
-    private static Camion camion = new Camion(100, 200, 200, 100, 0.5);
+    private static Player jugador = new Player( 100, 200, 32, 48, 0.5);
+
+    private static Camion camion = new Camion(800, 300-ImageLoader.spriteCamion.getHeight()/2,
+            ImageLoader.spriteCamion.getWidth(), ImageLoader.spriteCamion.getHeight(), 0.5);
+
+    //Solo cambien el del camion para que se mueva tod.o
+    private static VagonOrganico vagonOrganico = new VagonOrganico(camion.getX() - ImageLoader.spriteVagonOrganico.getWidth(),
+           camion.getY() - 1,
+            ImageLoader.spriteVagonOrganico.getWidth(),
+            ImageLoader.spriteVagonOrganico.getHeight(), 0.5);
+    private static VagonPapel vagonPapel = new VagonPapel(vagonOrganico.getX() - vagonOrganico.getWidth(),
+            vagonOrganico.getY(),
+            ImageLoader.spriteVagonPapel.getWidth(),
+            ImageLoader.spriteVagonPapel.getHeight(), 0.5);
+    private static VagonPlastico vagonPlastico = new VagonPlastico(vagonPapel.getX() - vagonPapel.getWidth(),
+            vagonPapel.getY(),
+            ImageLoader.spriteVagonPlastico.getWidth(),
+            ImageLoader.spriteVagonPlastico.getHeight(), 0.5);
+    private static VagonVidrio vagonVidrio = new VagonVidrio(vagonPlastico.getX() - vagonPlastico.getWidth(),
+            vagonPlastico.getY(),
+            ImageLoader.spriteVagonVidrio.getWidth(),
+            ImageLoader.spriteVagonVidrio.getHeight(), 0.5);
+
     private static BotePlastico boteAzul = new BotePlastico( 50, 250, 50, 50, 1);
     Iterator<Basura> array = arrayBasura.getArrayBasura().iterator();
     List<Basura> remove = new ArrayList();
@@ -159,7 +182,7 @@ public class Main extends Application {
             }
         }.start();
 
-        reproductor.fadeInPlay(0.6);
+        reproductor.fadeInPlay(0.1);
 
         primaryStage.show();
     }
@@ -212,7 +235,11 @@ public class Main extends Application {
         arrayEntidad.addAll(arrayBasura.getArrayBasura());
         arrayEntidad.add(jugador);
         arrayEntidad.add(camion);
-        arrayEntidad.add(boteAzul);
+        arrayEntidad.add(vagonOrganico);
+        arrayEntidad.add(vagonPapel);
+        arrayEntidad.add(vagonPlastico);
+        arrayEntidad.add(vagonVidrio);
+        //arrayEntidad.add(boteAzul);
     }
 
     private void initializeUtilities() {
@@ -288,7 +315,8 @@ public class Main extends Application {
             collisionDetection();
             updateEntitiesInScreen();
 
-
+            camion.move();
+            bg.setBackgroundX( -camion.getDistance() );
             jugador.move();
 
         }
@@ -301,247 +329,6 @@ public class Main extends Application {
 
     }
 
-    private void updateGameState() {
-        if(stateGame == StateGame.playing) {
-
-            if(camion.getGasolina()<0)
-            {  setStateGame(StateGame.gameOver);
-
-
-            }
-
-            if(bg.getBackgroundX() < -bg.getGameBg(1).getWidth() + WIDTH) {
-                setStateGame(StateGame.gameOver);
-            }
-
-            if(stateGame==StateGame.gameOver)
-            {
-
-                    System.out.println(resultado.getName());
-                    setStateGame(StateGame.resultado);
-                    capturaNombreUsuario();
-                   addComponet();
-
-            }
-            }
-        }
-
-
-    private void collisionDetection() {
-
-        screenEdgesCollision();
-        camionCollision();
-        checkBasuraCollisions();
-        playerCollision();
-
-    }
-
-    private void playerCollision() {
-
-        /*
-        Colisiones del JUGADOR con otra cosa.
-        Las colisiones con la basura deben hacerse en el mismo metodo de la basura para evitar recorrer demasiadas
-        veces el array de basuras.
-         */
-
-        if(camion.collisionsWith(jugador.getHitboxX() + jugador.getDx(),jugador.getHitboxY() + jugador.getDy(),
-                                    jugador.getHitboxWidth(), jugador.getHitboxHeight()) == 1) {
-
-            directionalCollisionValidation(jugador, camion);
-        }
-
-        if(jugador.isCargandoBasura()) {
-            //Aqui irian todas las verificaciones de si esta depositando la basura en el vagon correcto.
-
-            if (boteAzul.collisionsWith(jugador.getHitboxX(), jugador.getHitboxY(), jugador.getHitboxWidth(),
-                    jugador.getHitboxHeight()) == 1) {
-
-                if(jugador.getBasura() instanceof BasuraPlastico)
-                {   // si la basura que lleva es plastico obtenr punto y gasolina
-                    accionCollisionBoteObtenerPunto(jugador.getBasura());
-                }
-                else {
-                    // si l a basura no es plastico se pierde punto y gasolina
-                    accionCollisionBotePierdePunto(jugador.getBasura());
-                }
-            }
-        }
-
-    }
-
-    private void camionCollision() {
-
-        //Esto es:  Se verifica si el camion llegaria a chocar con el jugador si el camion se moviera, en caso de no suceda
-        //se ejecuta su codigo de movimiento y tambien se mueve el mapa.
-
-        if(jugador.collisionsWith(camion.getHitboxX() + camion.getDx(), camion.getHitboxY() + camion.getDy(),
-                                      camion.getHitboxWidth(), camion.getHitboxHeight()) == 0                    ) {
-
-            camion.move();
-            boteAzul.move();
-            bg.setBackgroundX( -camion.getDistance() );
-        } else if(getCollisionDirection(camion, jugador) != Direccion.izquierda) {
-            camion.move();
-            boteAzul.move();
-            bg.setBackgroundX( -camion.getDistance() );
-        }
-    }
-
-    private void screenEdgesCollision() {
-
-        //En las esquinas puede hacer mas de una de estas condiciones al mismo tiempo. Dejan de ser else-if y se vuelven
-        //solo if's.
-
-        if(jugador.getX() + jugador.getDx() < 0){
-            jugador.setX(0);
-            jugador.setHitboxX(0);
-            jugador.setDx(0);
-        }
-
-        if(jugador.getY() + jugador.getDy() < 0){
-            jugador.setY(0);
-            jugador.setHitboxY(jugador.getHitboxHeight());
-            jugador.setDy(0);
-        }
-
-        if(jugador.getX() + jugador.getDx() > Main.WIDTH - ImageLoader.paradoArriba.getWidth()){
-            jugador.setX(Main.WIDTH - jugador.getWidth());
-            jugador.setHitboxX(Main.WIDTH - jugador.getHitboxWidth());
-            jugador.setDx(0);
-        }
-
-        if(jugador.getY() + jugador.getDy() > Main.HEIGHT - jugador.getHeight()) { //- ImageLoader.paradoArriba.getHeight()){
-            jugador.setY(Main.HEIGHT - jugador.getHeight());
-            jugador.setHitboxY(Main.HEIGHT- jugador.getHitboxHeight());
-            jugador.setDy(0);
-        }
-
-    }
-
-    public void checkBasuraCollisions() {
-        arrayBasura.getArrayBasura().forEach(basura -> {
-
-            //Colision para detectar si el jugador puede o no recoger la basura en cuestion.
-            if (basura.nextTo(jugador.getHitboxX(), jugador.getHitboxY(), jugador.getWidth(), jugador.getHeight(), Player.SPEED) == 1) {
-                basura.setNextToPlayer(true);
-            } else {
-                basura.setNextToPlayer(false);
-            }
-
-            if(jugador.collisionsWith(basura.getHitboxX() + basura.getDx(), basura.getHitboxY() + basura.getDy(),
-                                          basura.getHitboxWidth(), basura.getHitboxHeight()) == 0 || basura.isMoving())
-            {
-                basura.move();
-            }
-
-            if(basura.collisionsWith(jugador.getHitboxX() + jugador.getDx(), jugador.getHitboxY() + jugador.getDy(),
-                                        jugador.getHitboxWidth(), jugador.getHitboxHeight()) == 1 ) {
-
-                directionalCollisionValidation(jugador, basura);
-            }
-
-        });
-    }
-
-    //e1 es el que se mueve, e2 es con quien quieres verificar desde que direccion se le ha acercado el e1.
-
-    public Direccion getCollisionDirection(MovingIsoEntity e1, MovingIsoEntity e2) {
-
-        if(e1.getHitboxX() + e1.getDx() <= e2.getHitboxX() + e2.getHitboxWidth() &&
-           e1.getHitboxY() + e1.getHitboxHeight() >= e2.getHitboxY() &&
-           e1.getHitboxY() <= e2.getHitboxY() + e2.getHitboxHeight()) {
-            //Si choca por la derecha
-            return Direccion.derecha;
-        } else if(e1.getHitboxX() + e1.getHitboxWidth() + e1.getDx() >= e2.getHitboxX() &&
-                e1.getHitboxY() + e1.getHitboxHeight() >= e2.getHitboxY() &&
-                e1.getHitboxY() <= e2.getHitboxY() + e2.getHitboxHeight()) {
-            //Si choca por la izquierda
-            return Direccion.izquierda;
-        } else if(e1.getHitboxY() + e1.getDy() <= e2.getHitboxY() + e2.getHitboxHeight() &&
-                e1.getHitboxX() + e1.getHitboxWidth() >= e2.getHitboxX() &&
-                e1.getHitboxX() <= e2.getHitboxX() + e2.getHitboxWidth()) {
-            //Si choca por abajo
-            return Direccion.abajo;
-        } else if(e1.getHitboxY() + e1.getHitboxHeight() + e1.getDy() >= e2.getHitboxY() &&
-                e1.getHitboxX() + e1.getHitboxWidth() >= e2.getHitboxX() &&
-                e1.getHitboxX() <= e2.getHitboxX() + e2.getHitboxWidth()) {
-            //Si choca por arriba
-            return Direccion.arriba;
-        }
-
-        return null;
-    }
-
-    //e1 choca con e2
-    private void directionalCollisionValidation(MovingIsoEntity e1, MovingIsoEntity e2) {
-        Direccion direccionDeColision = getCollisionDirection(e1,e2);
-
-        if(direccionDeColision == Direccion.derecha || direccionDeColision == Direccion.izquierda) {
-            e1.setDx(0);
-        }
-
-        if(direccionDeColision == Direccion.arriba || direccionDeColision == Direccion.abajo) {
-            e1.setDy(0);
-        }
-
-    }
-
-    private void accionCollisionBoteObtenerPunto(Basura basura)
-    {
-        remove.add(basura);
-        camion.setGasolina(camion.getGasolina() + 30);
-        resultado.setPuntaje(resultado.getPuntaje()+1);
-        jugador.setCargandoBasura(false);
-        jugador.setBasura(null);
-    }
-
-    private void accionCollisionBotePierdePunto(Basura basura)
-    {
-        remove.add(basura);
-        camion.setGasolina(camion.getGasolina() - 30);
-        resultado.setPuntaje(resultado.getPuntaje()-1);
-        jugador.setCargandoBasura(false);
-        jugador.setBasura(null);
-    }
-
-
-
-    private void capturaNombreUsuario()
-    {
-        Task<Void> capturanombre = new Task<Void>() {
-            @Override
-            protected Void call() throws Exception {
-                Platform.runLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        TextInputDialog dialog = new TextInputDialog("walter");
-                        dialog.setTitle("Nombre de jugador");
-
-                        dialog.setContentText("Por favor introduce tu nombre:");
-
-                        // Traditional way to get the response value.
-                        Optional<String> result = dialog.showAndWait();
-                        if (result.isPresent()){
-                            System.out.println("Your name: " + result.get());
-                            resultado.setName(result.get());
-                        }
-
-                        // The Java 8 way to get the response value (with lambda expression).
-                        result.ifPresent(name -> System.out.println("Your name: " + name));
-                        if(resultado.getPuntaje()>resultadoScore.getPuntaje())
-                        {
-                            AccionArchivo.escribir(resultado);
-                        }
-
-                    }
-                });
-
-                return null;
-            }
-        };
-        capturanombre.run();
-    }
     private void updatePlayerMovement() {
 
         //Tanto el touch como el teclado comparten funcionamiento, y se realizan cambios segun lo que se tenga presionado
@@ -632,52 +419,13 @@ public class Main extends Application {
 
             }
 
-
-            //Esto es para agarrar y soltar basura
-            if (ControlInput.isButtonPressed("S")) {
-
-                if (!ControlInput.isAltButtonA()) {
-                    if (!jugador.isCargandoBasura()) {
-
-                        for (Basura basura :
-                                arrayBasura.getArrayBasura()) {
-                            if (basura.isNextToPlayer() && !jugador.isCargandoBasura()) {      //Mas de una basura se podia mover
-                                jugador.setCargandoBasura(true);                               //por que no consideramos que el jugador
-                                basura.setMoving(true);                                 //podia volverse ocupado dentro de este mismo
-                                jugador.setBasura(basura);                              //
-                            }
-                        }
-                    } else {
-/*
-                        for (Basura basura :
-                                Main.getArrayBasura().getArrayBasura()) {
-                            if (basura.isMoving() && jugador.isCargandoBasura()) {
-                                jugador.setCargandoBasura(false);
-                                basura.setMoving(false);
-                            }
-                        }*/
-                        jugador.getBasura().setMoving(false);
-                        jugador.setBasura(null);
-                        jugador.setCargandoBasura(false);
-                    }
-
-                    ControlInput.setAltButtonA(true);   //Es un switch, para saber si soltaron o no la tecla.
-                }
-
-            } else {
-                ControlInput.setAltButtonA(false);
-            }
-
-
             //Este es el dash
             if (ControlInput.isButtonPressed("D")) {
                 if ((jugador.getDx() != 0 || jugador.getDy() != 0) && !ControlInput.isAltButtonB() && dashCooldown == 0) {     //Si se está moviendo hacia alguna direccion.
                     jugador.setDashing(true);
                     ControlInput.setAltButtonB(true);
                 }
-            } else {        //Necesitamos que pueda realizar su funcionalidad UNA vez hasta que lo vuelva a presionar.
-                //Con esto lo que hago es obligar al usuario a levantar el dedo de la tecla, y solo despues
-                //de que lo haga es que puede volver a utilizar el boton. Lo mismo con el de arriba.
+            } else {
                 ControlInput.setAltButtonB(false);
             }
 
@@ -700,12 +448,193 @@ public class Main extends Application {
             }
         }
 
+        //Esto es para agarrar y soltar basura. Deberia ser independiente al dash.
+        if (ControlInput.isButtonPressed("S")) {
+
+            if (!ControlInput.isAltButtonA()) {
+                if (!jugador.isCargandoBasura()) {
+
+                    for (Basura basura : Main.getArrayBasura().getArrayBasura()) {
+                        if (basura.isNextToPlayer() && !jugador.isCargandoBasura()) {
+                            jugador.setCargandoBasura(true);
+                            basura.setRecogida(true);
+                            jugador.setBasura(basura);
+                        }
+                    }
+                } else {
+                    jugador.getBasura().setRecogida(false);
+                    jugador.setBasura(null);
+                    jugador.setCargandoBasura(false);
+                }
+
+                ControlInput.setAltButtonA(true);   //Es un switch, para saber si soltaron o no la tecla.
+            }
+
+        } else {
+            ControlInput.setAltButtonA(false);
+        }
+
     }
 
+    private void collisionDetection() {
 
+        screenEdgesCollision();
+        checkBasuraCollisions();
+        playerCollision();
 
+    }
 
+    private void screenEdgesCollision() {
 
+        //En las esquinas puede hacer mas de una de estas condiciones al mismo tiempo. Dejan de ser else-if y se vuelven
+        //solo if's.
+
+        if(jugador.getX() + jugador.getDx() < 0){
+            jugador.setX(0);
+            jugador.setHitboxX(0);
+            jugador.setDx(0);
+        }
+
+        if(jugador.getY() + jugador.getDy() < 0){
+            jugador.setY(0);
+            jugador.setHitboxY(jugador.getHitboxHeight());
+            jugador.setDy(0);
+        }
+
+        if(jugador.getX() + jugador.getDx() > Main.WIDTH - ImageLoader.paradoArriba.getWidth()){
+            jugador.setX(Main.WIDTH - jugador.getWidth());
+            jugador.setHitboxX(Main.WIDTH - jugador.getHitboxWidth());
+            jugador.setDx(0);
+        }
+
+        if(jugador.getY() + jugador.getDy() > Main.HEIGHT - jugador.getHeight()) { //- ImageLoader.paradoArriba.getHeight()){
+            jugador.setY(Main.HEIGHT - jugador.getHeight());
+            jugador.setHitboxY(Main.HEIGHT - jugador.getHitboxHeight());
+            jugador.setDy(0);
+        }
+
+    }
+
+    public void checkBasuraCollisions() {
+        arrayBasura.getArrayBasura().forEach(basura -> {
+
+            //Colision para detectar si el jugador puede o no recoger la basura en cuestion.
+            if (basura.collisionsWith(jugador.getHitboxX(), jugador.getHitboxY(), jugador.getWidth(), jugador.getHeight()) == 1) {
+                basura.setNextToPlayer(true);
+            } else {
+                basura.setNextToPlayer(false);
+            }
+
+            basura.move();
+
+        });
+    }
+
+    private void playerCollision() {
+
+        if(camion.collisionsWith(jugador.getHitboxX() + jugador.getDx(),jugador.getHitboxY() + jugador.getDy(),
+                jugador.getHitboxWidth(), jugador.getHitboxHeight()) == 1) {
+
+            directionalCollisionValidation(jugador, camion);
+        }
+
+        if(vagonOrganico.collisionsWith(jugador.getHitboxX() + jugador.getDx(),jugador.getHitboxY() + jugador.getDy(),
+                jugador.getHitboxWidth(), jugador.getHitboxHeight()) == 1) {
+
+            directionalCollisionValidation(jugador, vagonOrganico);
+        }
+
+        if(vagonPapel.collisionsWith(jugador.getHitboxX() + jugador.getDx(),jugador.getHitboxY() + jugador.getDy(),
+                jugador.getHitboxWidth(), jugador.getHitboxHeight()) == 1) {
+
+            directionalCollisionValidation(jugador, vagonPapel);
+        }
+
+        if(vagonPlastico.collisionsWith(jugador.getHitboxX() + jugador.getDx(),jugador.getHitboxY() + jugador.getDy(),
+                jugador.getHitboxWidth(), jugador.getHitboxHeight()) == 1) {
+
+            directionalCollisionValidation(jugador, vagonPlastico);
+        }
+
+        if(vagonVidrio.collisionsWith(jugador.getHitboxX() + jugador.getDx(),jugador.getHitboxY() + jugador.getDy(),
+                jugador.getHitboxWidth(), jugador.getHitboxHeight()) == 1) {
+
+            directionalCollisionValidation(jugador, vagonVidrio);
+        }
+
+        if(jugador.isCargandoBasura()) {
+            checkVagonCollision();
+        }
+    }
+    private void checkVagonCollision() {
+
+        if (vagonOrganico.nextTo(jugador.getHitboxX(), jugador.getHitboxY(), jugador.getHitboxWidth(),
+                jugador.getHitboxHeight(), Player.SPEED) == 1) {
+            vagonOrganico.procesaBasura(jugador.getBasura());
+            removeBasuraFromPlayer();
+        } else if(vagonPapel.nextTo(jugador.getHitboxX(), jugador.getHitboxY(), jugador.getHitboxWidth(),
+                jugador.getHitboxHeight(), Player.SPEED) == 1) {
+            vagonPapel.procesaBasura(jugador.getBasura());
+            removeBasuraFromPlayer();
+        } else if(vagonPlastico.nextTo(jugador.getHitboxX(), jugador.getHitboxY(), jugador.getHitboxWidth(),
+                jugador.getHitboxHeight(), Player.SPEED) == 1) {
+            vagonPlastico.procesaBasura(jugador.getBasura());
+            removeBasuraFromPlayer();
+        } else if(vagonVidrio.nextTo(jugador.getHitboxX(), jugador.getHitboxY(), jugador.getHitboxWidth(),
+                jugador.getHitboxHeight(),Player.SPEED) == 1) {
+            vagonVidrio.procesaBasura(jugador.getBasura());
+            removeBasuraFromPlayer();
+        }
+
+    }
+    //e1 es el que se mueve, e2 es con quien quieres verificar desde que direccion se le ha acercado el e1.
+
+    public Direccion getCollisionDirection(MovingIsoEntity e1, MovingIsoEntity e2) {
+
+        if(e1.getHitboxX() + e1.getDx() <= e2.getHitboxX() + e2.getHitboxWidth() &&
+           e1.getHitboxY() + e1.getHitboxHeight() >= e2.getHitboxY() &&
+           e1.getHitboxY() <= e2.getHitboxY() + e2.getHitboxHeight()) {
+            //Si choca por la derecha
+            return Direccion.derecha;
+        } else if(e1.getHitboxX() + e1.getHitboxWidth() + e1.getDx() >= e2.getHitboxX() &&
+                e1.getHitboxY() + e1.getHitboxHeight() >= e2.getHitboxY() &&
+                e1.getHitboxY() <= e2.getHitboxY() + e2.getHitboxHeight()) {
+            //Si choca por la izquierda
+            return Direccion.izquierda;
+        } else if(e1.getHitboxY() + e1.getDy() <= e2.getHitboxY() + e2.getHitboxHeight() &&
+                e1.getHitboxX() + e1.getHitboxWidth() >= e2.getHitboxX() &&
+                e1.getHitboxX() <= e2.getHitboxX() + e2.getHitboxWidth()) {
+            //Si choca por abajo
+            return Direccion.abajo;
+        } else if(e1.getHitboxY() + e1.getHitboxHeight() + e1.getDy() >= e2.getHitboxY() &&
+                e1.getHitboxX() + e1.getHitboxWidth() >= e2.getHitboxX() &&
+                e1.getHitboxX() <= e2.getHitboxX() + e2.getHitboxWidth()) {
+            //Si choca por arriba
+            return Direccion.arriba;
+        }
+
+        return null;
+    }
+
+    //e1 choca con e2
+    private void directionalCollisionValidation(MovingIsoEntity e1, MovingIsoEntity e2) {
+        Direccion direccionDeColision = getCollisionDirection(e1,e2);
+
+        if(direccionDeColision == Direccion.derecha || direccionDeColision == Direccion.izquierda) {
+            e1.setDx(0);
+        }
+
+        if(direccionDeColision == Direccion.arriba || direccionDeColision == Direccion.abajo) {
+            e1.setDy(0);
+        }
+
+    }
+    private void removeBasuraFromPlayer()
+    {
+        remove.add(jugador.getBasura());
+        jugador.setCargandoBasura(false);
+        jugador.setBasura(null);
+    }
 
     private void updateEntitiesInScreen() {
         //Lista de elimianr (si es size de la lista eliminar se elimina)
@@ -717,7 +646,29 @@ public class Main extends Application {
         }
     }
 
+    private void updateGameState() {
+        if(stateGame == StateGame.playing) {
 
+            if(camion.getGasolina()<0)
+            {
+                setStateGame(StateGame.gameOver);
+            }
+
+            if(bg.getBackgroundX() < -bg.getGameBg().getWidth() + WIDTH) {
+                setStateGame(StateGame.gameOver);
+            }
+            if(stateGame==StateGame.gameOver)
+            {
+
+                System.out.println(resultado.getName());
+                setStateGame(StateGame.resultado);
+                capturaNombreUsuario();
+                addComponet();
+
+            }
+
+        }
+    }
 
     public void updateGraphic(GraphicsContext gc,double t)
     {
@@ -748,6 +699,10 @@ public class Main extends Application {
 
 
                else if (objeto instanceof Camion) gc.drawImage(ImageLoader.spriteCamion, (intro)? objetoX:objeto.getX(),objeto.getY(), objeto.getWidth(), objeto.getHeight());
+               else if (objeto instanceof VagonOrganico) gc.drawImage(ImageLoader.spriteVagonOrganico, (intro)? objetoX:objeto.getX(),objeto.getY(), objeto.getWidth(), objeto.getHeight());
+               else if (objeto instanceof VagonPapel) gc.drawImage(ImageLoader.spriteVagonPapel, (intro)? objetoX:objeto.getX(),objeto.getY(), objeto.getWidth(), objeto.getHeight());
+               else if (objeto instanceof VagonPlastico) gc.drawImage(ImageLoader.spriteVagonPlastico, (intro)? objetoX:objeto.getX(),objeto.getY(), objeto.getWidth(), objeto.getHeight());
+               else if (objeto instanceof VagonVidrio) gc.drawImage(ImageLoader.spriteVagonVidrio, (intro)? objetoX:objeto.getX(),objeto.getY(), objeto.getWidth(), objeto.getHeight());
                else if(objeto instanceof BoteBasura) gc.drawImage(ImageLoader.spriteBoteAzul,(intro)? objetoX:objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
 
                /*
@@ -757,8 +712,8 @@ public class Main extends Application {
                gc.setStroke(Color.BLACK);
                gc.strokeRect(objeto.getX(), objeto.getY(), objeto.getWidth(), objeto.getHeight());
 
-               if(objeto instanceof MovingIsoEntity) {
-                   MovingIsoEntity b = (MovingIsoEntity) objeto;
+               if(objeto instanceof IsometricEntity) {
+                   IsometricEntity b = (IsometricEntity) objeto;
 
                    gc.setStroke(Color.RED);
                    gc.strokeRect(b.getHitboxX(), b.getHitboxY(), b.getHitboxWidth(), b.getHitboxHeight());
@@ -811,44 +766,45 @@ public class Main extends Application {
         gc.fillRect( (Math.min(indicator, xPos + 150)), HEIGHT-35,10,30);
     }
 
-    public void paintPlayer(GraphicsContext gc,double t)
-    {
-        double playerX = (jugador.getX()+bg.getBackgroundX() < 0 && !intro) ? 0:jugador.getX()+bg.getBackgroundX();
-
-        if (Direccion.abajo==jugador.getDireccion()) {
-            if(jugador.getDy()!=0)gc.drawImage(ImageLoader. caminaAbajo.getFrame(t),(intro)? playerX:jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
-            else gc.drawImage(ImageLoader.paradoAbajo,(intro)? playerX:jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
-        }
-        else if(jugador.getDireccion()== Direccion.arriba)
-        {
-            if (jugador.getDy()!=0) gc.drawImage(ImageLoader.caminaArriba.getFrame(t),(intro)? playerX:jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
-            else gc.drawImage(ImageLoader.paradoArriba,(intro)? playerX:jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
-        }
-        else if(jugador.getDireccion()== Direccion.derecha)
-        {
-            if (jugador.getDx()!=0) {
-                gc.drawImage(ImageLoader.caminaderecho.getFrame(t),(intro)? playerX:jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
-
-            }
-
-            else {
-                gc.drawImage(ImageLoader.paradoDerecho,(intro)? playerX:jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
-            }
-
-        }
-        else if(jugador.getDireccion()== Direccion.izquierda)
-        {
-            if(jugador.getDx()!=0) {
-                gc.drawImage(ImageLoader.caminaIzquierda.getFrame(t), (intro)? playerX:jugador.getX(), jugador.getY(), jugador.getWidth(), jugador.getHeight());
-            }
-            else {
-                gc.drawImage(ImageLoader.paradoIzquierda,(intro)? playerX:jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
-            }
-        }
     }
 
-    public void inicializaBotonMenu()
+    private void capturaNombreUsuario()
     {
+        Task<Void> capturanombre = new Task<Void>() {
+            @Override
+            protected Void call() throws Exception {
+                Platform.runLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        TextInputDialog dialog = new TextInputDialog("walter");
+                        dialog.setTitle("Nombre de jugador");
+
+                        dialog.setContentText("Por favor introduce tu nombre:");
+
+                        // Traditional way to get the response value.
+                        Optional<String> result = dialog.showAndWait();
+                        if (result.isPresent()){
+                            System.out.println("Your name: " + result.get());
+                            resultado.setName(result.get());
+                        }
+
+                        // The Java 8 way to get the response value (with lambda expression).
+                        result.ifPresent(name -> System.out.println("Your name: " + name));
+                        if(resultado.getPuntaje()>resultadoScore.getPuntaje())
+                        {
+                            AccionArchivo.escribir(resultado);
+                        }
+
+                    }
+                });
+
+                return null;
+            }
+        };
+        capturanombre.run();
+    }
+    public void inicializaBotonMenu() {
         botonJugar.setOnTouchPressed(new EventHandler<TouchEvent>() {
             @Override
             public void handle(TouchEvent event) {
@@ -893,23 +849,44 @@ public class Main extends Application {
                 System.exit(0);
             }
         });
-
-        botonVolverMenu.setOnTouchPressed(new EventHandler<TouchEvent>() {
-            @Override
-            public void handle(TouchEvent event) {
-                setStateGame(StateGame.menu);
-                addComponet();
-            }
-        });
-
-        botonVolverMenu.setOnMouseClicked(new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent event) {
-                setStateGame(StateGame.menu);
-                addComponet();
-            }
-        });
     }
+
+    public void paintPlayer(GraphicsContext gc,double t)
+    {
+        double playerX = (jugador.getX()+bg.getBackgroundX() < 0 && !intro) ? 0:jugador.getX()+bg.getBackgroundX();
+
+        if (Direccion.abajo==jugador.getDireccion()) {
+            if(jugador.getDy()!=0)gc.drawImage(ImageLoader. caminaAbajo.getFrame(t),(intro)? playerX:jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
+            else gc.drawImage(ImageLoader.paradoAbajo,(intro)? playerX:jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
+        }
+        else if(jugador.getDireccion()== Direccion.arriba)
+        {
+            if (jugador.getDy()!=0) gc.drawImage(ImageLoader.caminaArriba.getFrame(t),(intro)? playerX:jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
+            else gc.drawImage(ImageLoader.paradoArriba,(intro)? playerX:jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
+        }
+        else if(jugador.getDireccion()== Direccion.derecha)
+        {
+            if (jugador.getDx()!=0) {
+                gc.drawImage(ImageLoader.caminaderecho.getFrame(t),(intro)? playerX:jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
+
+            }
+
+            else {
+                gc.drawImage(ImageLoader.paradoDerecho,(intro)? playerX:jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
+            }
+
+        }
+        else if(jugador.getDireccion()== Direccion.izquierda)
+        {
+            if(jugador.getDx()!=0) {
+                gc.drawImage(ImageLoader.caminaIzquierda.getFrame(t), (intro)? playerX:jugador.getX(), jugador.getY(), jugador.getWidth(), jugador.getHeight());
+            }
+            else {
+                gc.drawImage(ImageLoader.paradoIzquierda,(intro)? playerX:jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
+            }
+        }
+    }
+
     public void iniciarTexto()
     {
         textoNameScore=new Text();
@@ -930,6 +907,7 @@ public class Main extends Application {
         textoPuntajeScore.setFont(Font.font("Verdana",30));
 
     }
+
     private void pintarResultado(GraphicsContext gc){
         bg.paintBackground(gc);
         gc.drawImage(ImageLoader.spriteScore,200,150,633,300);
@@ -963,6 +941,14 @@ public class Main extends Application {
 
     public static void setStateGame(StateGame stateGame) {
         Main.stateGame = stateGame;
+    }
+
+    public static int getPuntaje() {
+        return puntaje;
+    }
+
+    public static void setPuntaje(int puntaje) {
+        Main.puntaje = puntaje;
     }
 
 
