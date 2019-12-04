@@ -30,7 +30,7 @@ public class Camion extends MovingIsoEntity {
         if(gasolina>0)
         {
             distance += SPEED;
-            gasolina -= 0.16 ;
+            gasolina -= 0.32 ;
         }
     }
 

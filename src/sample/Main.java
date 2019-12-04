@@ -103,7 +103,6 @@ public class Main extends Application {
     *  que devuelva un array de entidades que ya tenga todas las basuras. Asi te libras del foreach en initializeArrayEntidad. Ademas
     *  te libras de cosas redundantes como Main.getArrayBasura().getArrayBasura(); [TouchControl : 32]
     */
-    private static ArrayBasura arrayBasura = new ArrayBasura();
     private static Player jugador = new Player( 100, 200, 32, 48, 0.5);
 
     private static Camion camion = new Camion(800, 300-ImageLoader.spriteCamion.getHeight()/2,
@@ -128,6 +127,7 @@ public class Main extends Application {
             ImageLoader.spriteVagonVidrio.getHeight(), 0.5);
 
     private static BotePlastico boteAzul = new BotePlastico( 50, 250, 50, 50, 1);
+    private static ArrayBasura arrayBasura = new ArrayBasura();
     Iterator<Basura> array = arrayBasura.getArrayBasura().iterator();
     List<Basura> remove = new ArrayList();
     private ArrayList<Entity> arrayEntidad;
@@ -181,6 +181,7 @@ public class Main extends Application {
                 else {
                     updateLogic();
                     updateGraphic(gc, t);
+                    System.out.println(stateGame);
                 }
             }
         }.start();
@@ -255,6 +256,29 @@ public class Main extends Application {
             }
         };
     }
+    public void reset()
+    {
+
+
+        arrayBasura = new ArrayBasura();
+        arrayEntidad.clear();
+
+        arrayEntidad.add(jugador);
+        arrayEntidad.add(camion);
+        arrayEntidad.add(vagonOrganico);
+        arrayEntidad.add(vagonPapel);
+        arrayEntidad.add(vagonPlastico);
+        arrayEntidad.add(vagonVidrio);
+        arrayEntidad.addAll(arrayBasura.getArrayBasura());
+        resultado.setPuntaje(0);
+        resultado.setName(null);
+        camion.setGasolina(1000);
+        jugador.setDx(0);
+        jugador.setDy(0);
+        jugador.setX(100);
+        jugador.setY(200);
+        bg.reset();
+    }
 
     public void addComponet()
     {
@@ -322,7 +346,7 @@ public class Main extends Application {
 
             Collections.sort(arrayEntidad, cmpArrayEntidad);    //Instancie el comparador en el initializeUtilities para que no se cree uno nuevo cada vez.
 
-            texto.setText("EL puntaje es:"+resultado.getPuntaje()+"                                   Gasolina:"+String.format("%.1f",camion.getGasolina()));
+            texto.setText("EL puntaje es:"+resultado.getPuntaje()+"      High Puntaje:"+resultadoScore.getPuntaje()+"        Gasolina:"+String.format("%.1f",camion.getGasolina()));
 
             updatePlayerMovement();
             collisionDetection();
@@ -668,18 +692,18 @@ public class Main extends Application {
                 setStateGame(StateGame.gameOver);
             }
 
-            if(bg.getBackgroundX() < -bg.getGameBg(1).getWidth() + WIDTH) {
+          /*  if(bg.getBackgroundX() < -bg.getGameBg(1).getWidth() + WIDTH) {
                 setStateGame(StateGame.gameOver);
-            }
-            if(stateGame==StateGame.gameOver)
-            {
+            }*/
 
-                System.out.println(resultado.getName());
-                setStateGame(StateGame.resultado);
-                capturaNombreUsuario();
-                addComponet();
+        }
+        if(stateGame==StateGame.gameOver)
+        {
+            System.out.println(resultado.getName());
+            capturaNombreUsuario();
+            setStateGame(StateGame.resultado);
 
-            }
+            addComponet();
 
         }
     }
@@ -778,7 +802,11 @@ public class Main extends Application {
                 //intro = true;
             }
             else{           //Si esta en el ultimo mapa
+                camion.setGasolina(-1);
                 setStateGame(StateGame.gameOver);   //terminar el juego
+             updateGameState();
+             //   capturaNombreUsuario();
+            //    pintarResultado(gc);
             }
 
             camion.setDistance(0);
@@ -876,6 +904,7 @@ public class Main extends Application {
             @Override
             public void handle(TouchEvent event) {
                 Main.setStateGame(StateGame.menu);
+                reset();
                 addComponet();
             }
         });
@@ -884,6 +913,7 @@ public class Main extends Application {
             @Override
             public void handle(MouseEvent event) {
                 Main.setStateGame(StateGame.menu);
+                reset();
                 addComponet();
             }
         });
