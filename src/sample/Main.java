@@ -9,8 +9,8 @@
 
 package sample;
 
-import archivoSerializable.AccionArchivo;
-import archivoSerializable.Resultado;
+import archivoSeriazable.AccionArchivo;
+import archivoSeriazable.Resultado;
 import botones.Button;
 import controller.ControlInput;
 import controller.ControlsSetup;

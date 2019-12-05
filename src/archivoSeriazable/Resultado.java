@@ -7,7 +7,7 @@
  *    http://www.uabc.mx
  */
 
-package archivoSerializable;
+package archivoSeriazable;
 
 import java.io.Serializable;
 
