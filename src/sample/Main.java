@@ -1,16 +1,30 @@
+/*
+*    Proyecto Pro-Planeta
+*    Videojuego en Java construido con JavaFX
+*    Autores: Vera Arias Victor Manuel, Feng Haosheng, Melendez Lineros Leonardo
+*    Correo electronico: {victor.vera, feng.haosheng, leonardo.melendez}@uabc.edu.mx
+*    Universidad Autonoma de Baja California
+*    http://www.uabc.mx
+*/
+
 package sample;
 
-import archivoSeriazable.AccionArchivo;
-import archivoSeriazable.Resultado;
+import archivoSerializable.AccionArchivo;
+import archivoSerializable.Resultado;
 import botones.Button;
 import controller.ControlInput;
 import controller.ControlsSetup;
-
+import gameObjeto.ArrayBasura;
+import gameObjeto.Camion;
+import people.Player;
+import enums.Direccion;
+import reproductor.MusicPlayer;
+import resourceLoaders.AudioLoader;
+import resourceLoaders.ImageLoader;
 import display.Background;
 import entidades.Entity;
 import entidades.IsometricEntity;
 import entidades.MovingIsoEntity;
-import gameObjeto.*;
 import gameObjeto.basura.Basura;
 import gameObjeto.basura.basuraOrganica.BasuraBanana;
 import gameObjeto.basura.basuraOrganica.BasuraManzana;
@@ -25,6 +39,7 @@ import gameObjeto.basura.basuraVidrio.BasuraVentanaRoto;
 import gameObjeto.boteBasura.BoteBasura;
 import gameObjeto.boteBasura.BotePlastico;
 import gameObjeto.vagones.*;
+
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -41,26 +56,19 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import people.Player;
-import enums.Direccion;
-import reproductor.MusicPlayer;
-import resourceLoaders.AudioLoader;
-import resourceLoaders.ImageLoader;
 import teclado.TecladoFX;
-
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 
 public class Main extends Application {
 
     public static final int WIDTH = 1024;       //Constantes para cambiar el size del canvas de manera remota.
-    public static final int HEIGHT = 600;       //Podrian ser variables si queremos hacer que se escale el juego y sus elementos.
-    //Pd. la resolucion COMPLETA de la tablet es 1280 x 800
+    public static final int HEIGHT = 600;
 
     private Canvas canvas;
     private Group grupo;
@@ -75,12 +83,12 @@ public class Main extends Application {
     private Button botonB;
     private Button dpad;
     private TecladoFX teclado;
-    public static Button botonJugar=new Button(300,200,50,60, ImageLoader.spriteBotonJugar);
-    public static Button botonInstruccion=new Button(300,300,50,60, ImageLoader.spriteBotonInstruccion);
-    public static Button botonSalir=new Button(300,400,50,60, ImageLoader.spriteBotonSalir);
-    public static Button botonVolverMenu=new Button(250,500,50,60, ImageLoader.spriteBotonJugar);
+    private static Button botonJugar=new Button(300,200,50,60, ImageLoader.spriteBotonJugar);
+    private static Button botonInstruccion=new Button(300,300,50,60, ImageLoader.spriteBotonInstruccion);
+    private static Button botonSalir=new Button(300,400,50,60, ImageLoader.spriteBotonSalir);
+    private static Button botonVolverMenu=new Button(250,500,50,60, ImageLoader.spriteBotonJugar);
 
-    final long startNanoTime = System.nanoTime();
+    private final long startNanoTime = System.nanoTime();
 
     public static final double DASH_SPEED_MULT = 4;
     public static final double DIAG_SPEED_MULT = Math.sqrt(2);
@@ -88,15 +96,13 @@ public class Main extends Application {
     private final double maxDashFrames = 10; //En Frames
     private double dashFrames;
 
-
-
     private Resultado resultado=new Resultado();
     private Resultado resultadoScore= new Resultado();
     private boolean intro = false;
     private boolean shift = false;  //False = derecha
 
     private static int puntaje;        //puntaje, como es un atributo de clase, se inicializa en 0 por default.
-    Text texto = new Text();
+    private Text texto = new Text();
 
     /*
     *  ArrayBasura podria ser una clase estatica en la que se inicializara lo que ocupamos en un static block, llamamos a un metodo
@@ -108,7 +114,6 @@ public class Main extends Application {
     private static Camion camion = new Camion(800, 300-ImageLoader.spriteCamion.getHeight()/2,
             ImageLoader.spriteCamion.getWidth(), ImageLoader.spriteCamion.getHeight(), 0.5);
 
-    //Solo cambien el del camion para que se mueva tod.o
     private static VagonOrganico vagonOrganico = new VagonOrganico(camion.getX() - ImageLoader.spriteVagonOrganico.getWidth(),
            camion.getY() - 1,
             ImageLoader.spriteVagonOrganico.getWidth(),
@@ -129,14 +134,16 @@ public class Main extends Application {
     private static BotePlastico boteAzul = new BotePlastico( 50, 250, 50, 50, 1);
     private static ArrayBasura arrayBasura = new ArrayBasura();
     Iterator<Basura> array = arrayBasura.getArrayBasura().iterator();
-    List<Basura> remove = new ArrayList();
+    private List<Basura> remove = new ArrayList();
     private ArrayList<Entity> arrayEntidad;
     private Background bg;
 
     private Comparator cmpArrayEntidad;
+
     //captura de nombre de usuario
     TextInputDialog dialog = new TextInputDialog("walter");
-    Text textoPuntaje,textoName,textoPuntajeScore,textoNameScore;
+    private Text textoPuntaje,textoName,textoPuntajeScore,textoNameScore;
+
     //contador de captura
     boolean captura=true;
 
@@ -155,7 +162,6 @@ public class Main extends Application {
 
         arrayEntidad.sort(cmpArrayEntidad);    //Le hacemos un sort antes de empezar para que no tarde la primera vez que lo haga
                                                             //dentro del juego
-
         bg = new Background();
         texto.setX(0);
         texto.setY(40);
@@ -163,7 +169,6 @@ public class Main extends Application {
 
         resultadoScore=AccionArchivo.leer();
         addComponet();
-
     }
 
     @Override
@@ -174,7 +179,6 @@ public class Main extends Application {
             @Override
             public void handle(long now) {
                 double t = (now - startNanoTime) / 1000000000.0;
-
                 if(intro) {
                     showLevel(t);
                 }
@@ -191,8 +195,6 @@ public class Main extends Application {
         primaryStage.show();
     }
 
-
-
     ////////////////////////////////////////////
     /*             Bloque de setup            */
     ////////////////////////////////////////////
@@ -205,7 +207,6 @@ public class Main extends Application {
         primaryStage.setScene(escena);    //Uso una variable Scene para poder utilizar los listeners del teclado.
         primaryStage.setResizable(false);
         primaryStage.sizeToScene();
-
     }
 
     private void initializeControls() {
@@ -225,7 +226,7 @@ public class Main extends Application {
 
     private void initializeCanvas() {
         canvas = new Canvas(WIDTH, HEIGHT);
-        gc = canvas.getGraphicsContext2D();     //Muevo esto aqui por relacion al canvas.
+        gc = canvas.getGraphicsContext2D();
     }
 
     private void initializeReproductor() {
@@ -243,7 +244,6 @@ public class Main extends Application {
         arrayEntidad.add(vagonPapel);
         arrayEntidad.add(vagonPlastico);
         arrayEntidad.add(vagonVidrio);
-        //arrayEntidad.add(boteAzul);
     }
 
     private void initializeUtilities() {
@@ -256,10 +256,8 @@ public class Main extends Application {
             }
         };
     }
-    public void reset()
+    private void reset()
     {
-
-
         arrayBasura = new ArrayBasura();
         arrayEntidad.clear();
 
@@ -280,7 +278,7 @@ public class Main extends Application {
         bg.reset();
     }
 
-    public void addComponet()
+    private void addComponet()
     {
         grupo.getChildren().clear();
         grupo.getChildren().add(canvas);
@@ -300,8 +298,6 @@ public class Main extends Application {
             grupo.getChildren().addAll(botonVolverMenu);
         }
 
-
-        //else if? switch tal vez para cuando tengamos mas?
         if(stateGame==StateGame.gameOver)
         {
             grupo.getChildren().addAll(textoName,textoNameScore,textoPuntajeScore,textoPuntaje,botonVolverMenu);
@@ -330,16 +326,12 @@ public class Main extends Application {
                 intro = false;
             }
         }
-        //System.out.printf("%d\r", bg.getBackgroundX());
+
         updateGraphic(gc, t);
     }
 
-    public void updateLogic()
+    private void updateLogic()
     {
-        if(stateGame==StateGame.menu)
-        {
-
-        }
 
         if(stateGame==StateGame.playing)
         {
@@ -358,13 +350,8 @@ public class Main extends Application {
             resultado.setPuntaje(puntaje);
 
         }
-        if(stateGame==StateGame.resultado)
-        {
-
-        }
 
         updateGameState();
-
     }
 
     private void updatePlayerMovement() {
@@ -553,7 +540,7 @@ public class Main extends Application {
 
     }
 
-    public void checkBasuraCollisions() {
+    private void checkBasuraCollisions() {
         arrayBasura.getArrayBasura().forEach(basura -> {
 
             //Colision para detectar si el jugador puede o no recoger la basura en cuestion.
@@ -692,10 +679,6 @@ public class Main extends Application {
                 setStateGame(StateGame.gameOver);
             }
 
-          /*  if(bg.getBackgroundX() < -bg.getGameBg(1).getWidth() + WIDTH) {
-                setStateGame(StateGame.gameOver);
-            }*/
-
         }
         if(stateGame==StateGame.gameOver)
         {
@@ -704,11 +687,10 @@ public class Main extends Application {
             setStateGame(StateGame.resultado);
 
             addComponet();
-
         }
     }
 
-    public void updateGraphic(GraphicsContext gc,double t)
+    private void updateGraphic(GraphicsContext gc, double t)
     {
         gc.clearRect(0,0,WIDTH,HEIGHT);
 
@@ -750,29 +732,11 @@ public class Main extends Application {
                else if (objeto instanceof VagonPlastico) gc.drawImage(ImageLoader.spriteVagonPlastico, (intro)? objetoX:objeto.getX(),objeto.getY(), objeto.getWidth(), objeto.getHeight());
                else if (objeto instanceof VagonVidrio) gc.drawImage(ImageLoader.spriteVagonVidrio, (intro)? objetoX:objeto.getX(),objeto.getY(), objeto.getWidth(), objeto.getHeight());
                else if(objeto instanceof BoteBasura) gc.drawImage(ImageLoader.spriteBoteAzul,(intro)? objetoX:objeto.getX(),objeto.getY(),objeto.getWidth(),objeto.getHeight());
-
-               /*
-               *    Esto es para verificar en que lugar estan las hitbox, no lo quiten hasta la entrega.
-                */
-
-               //gc.setStroke(Color.BLACK);
-               //gc.strokeRect(objeto.getX(), objeto.getY(), objeto.getWidth(), objeto.getHeight());
-
-               if(objeto instanceof IsometricEntity) {
-                   IsometricEntity b = (IsometricEntity) objeto;
-
-                   gc.setStroke(Color.RED);
-                   gc.strokeRect(b.getHitboxX(), b.getHitboxY(), b.getHitboxWidth(), b.getHitboxHeight());
-               }
-
-               //Hasta aqui
            });
 
            if(!intro)
                 showProgressBar(gc);
         }
-
-
 
          if(stateGame==StateGame.gameOver)
         {
@@ -799,14 +763,11 @@ public class Main extends Application {
         if(progress >= 80){     //Si se llega al 80% del mapa
             if(bg.getCurrentMap()+1 < 4){   //Si no esta en el ultimo mapa
                 bg.setCurrentMap(bg.getCurrentMap()+1); //Pasar al siguiente
-                //intro = true;
             }
             else{           //Si esta en el ultimo mapa
                 camion.setGasolina(-1);
                 setStateGame(StateGame.gameOver);   //terminar el juego
-             updateGameState();
-             //   capturaNombreUsuario();
-            //    pintarResultado(gc);
+                updateGameState();
             }
 
             camion.setDistance(0);
@@ -825,25 +786,21 @@ public class Main extends Application {
 
                     @Override
                     public void run() {
-                        TextInputDialog dialog = new TextInputDialog("walter");
+                        TextInputDialog dialog = new TextInputDialog("Nombre");
                         dialog.setTitle("Nombre de jugador");
-
                         dialog.setContentText("Por favor introduce tu nombre:");
 
-                        // Traditional way to get the response value.
                         Optional<String> result = dialog.showAndWait();
                         if (result.isPresent()){
-                            System.out.println("Your name: " + result.get());
+                            System.out.println("Nombre: " + result.get());
                             resultado.setName(result.get());
                         }
 
-                        // The Java 8 way to get the response value (with lambda expression).
-                        result.ifPresent(name -> System.out.println("Your name: " + name));
+                        result.ifPresent(name -> System.out.println("Nombre: " + name));
                         if(resultado.getPuntaje()>resultadoScore.getPuntaje())
                         {
                             AccionArchivo.escribir(resultado);
                         }
-
                     }
                 });
 
@@ -852,7 +809,8 @@ public class Main extends Application {
         };
         capturanombre.run();
     }
-    public void inicializaBotonMenu() {
+
+    private void inicializaBotonMenu() {
         botonJugar.setOnTouchPressed(new EventHandler<TouchEvent>() {
             @Override
             public void handle(TouchEvent event) {
@@ -920,7 +878,7 @@ public class Main extends Application {
 
     }
 
-    public void paintPlayer(GraphicsContext gc,double t)
+    private void paintPlayer(GraphicsContext gc, double t)
     {
         double playerX = (jugador.getX()+bg.getBackgroundX() < 0 && !intro) ? 0:jugador.getX()+bg.getBackgroundX();
 
@@ -937,9 +895,7 @@ public class Main extends Application {
         {
             if (jugador.getDx()!=0) {
                 gc.drawImage(ImageLoader.caminaderecho.getFrame(t),(intro)? playerX:jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
-
             }
-
             else {
                 gc.drawImage(ImageLoader.paradoDerecho,(intro)? playerX:jugador.getX(),jugador.getY(),jugador.getWidth(),jugador.getHeight());
             }
@@ -956,7 +912,7 @@ public class Main extends Application {
         }
     }
 
-    public void iniciarTexto()
+    private void iniciarTexto()
     {
         textoNameScore=new Text();
         textoName=new Text();
@@ -974,7 +930,6 @@ public class Main extends Application {
         textoPuntajeScore.setX(550);
         textoPuntajeScore.setY(250);
         textoPuntajeScore.setFont(Font.font("Verdana",30));
-
     }
 
     private void pintarResultado(GraphicsContext gc){
@@ -1019,8 +974,6 @@ public class Main extends Application {
     public static void setPuntaje(int puntaje) {
         Main.puntaje = puntaje;
     }
-
-
 
     public static void main(String[] args) {
         launch(args);

@@ -1,16 +1,20 @@
+/*
+ *    Proyecto Pro-Planeta
+ *    Videojuego en Java construido con JavaFX
+ *    Autores: Vera Arias Victor Manuel, Feng Haosheng, Melendez Lineros Leonardo
+ *    Correo electronico: {victor.vera, feng.haosheng, leonardo.melendez}@uabc.edu.mx
+ *    Universidad Autonoma de Baja California
+ *    http://www.uabc.mx
+ */
+
 package teclado;
 
-import controller.ControlInput;
-import javafx.animation.AnimationTimer;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyEvent;
-
 import java.util.ArrayList;
 
 public abstract class TecladoFX {
-
-    //Puede ser estatico, es solo por las pruebas que estaba realizando que sigue siendo una clase instanciable.
 
     private EventHandler keyPressHandler;
     private EventHandler keyReleaseHandler;

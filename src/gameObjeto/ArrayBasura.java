@@ -1,3 +1,12 @@
+/*
+ *    Proyecto Pro-Planeta
+ *    Videojuego en Java construido con JavaFX
+ *    Autores: Vera Arias Victor Manuel, Feng Haosheng, Melendez Lineros Leonardo
+ *    Correo electronico: {victor.vera, feng.haosheng, leonardo.melendez}@uabc.edu.mx
+ *    Universidad Autonoma de Baja California
+ *    http://www.uabc.mx
+ */
+
 package gameObjeto;
 
 import gameObjeto.basura.Basura;
@@ -5,11 +14,9 @@ import gameObjeto.basura.basuraOrganica.BasuraBanana;
 import gameObjeto.basura.basuraOrganica.BasuraManzana;
 import gameObjeto.basura.basuraOrganica.BasuraSandia;
 import gameObjeto.basura.basuraPapel.BasuraBolaPapel;
-import gameObjeto.basura.basuraPapel.BasuraPapel;
 import gameObjeto.basura.basuraPapel.BasuraPapelAvion;
 import gameObjeto.basura.basuraPapel.BasuraPeriodico;
 import gameObjeto.basura.basuraPlastico.BasuraBotella;
-import gameObjeto.basura.basuraPlastico.BasuraPlastico;
 import gameObjeto.basura.basuraVidrio.BasuraBotellaRoto;
 import gameObjeto.basura.basuraVidrio.BasuraFoco;
 import gameObjeto.basura.basuraVidrio.BasuraVentanaRoto;
@@ -37,13 +44,6 @@ public  class ArrayBasura {
             {
                 matrizBasura[i][j]=random.nextInt(5);
             }
-
-        for(int i=0;i<50;i++)
-            for(int j=0;j<5;j++)
-            {
-                System.out.println("valor:"+matrizBasura[i][j]);
-            }
-
 
         for(int i=0;i<50;i++)
             for(int j=0;j<5;j++){
@@ -93,9 +93,7 @@ public  class ArrayBasura {
                         arrayBasura.add(new BasuraPeriodico(getRandom()+1000*i+1,100*j+50,width,height,size));
                     }
                 }
-
             }
-
     }
 
     private double getRandom()

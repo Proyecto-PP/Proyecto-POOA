@@ -1,23 +1,20 @@
+/*
+ *    Proyecto Pro-Planeta
+ *    Videojuego en Java construido con JavaFX
+ *    Autores: Vera Arias Victor Manuel, Feng Haosheng, Melendez Lineros Leonardo
+ *    Correo electronico: {victor.vera, feng.haosheng, leonardo.melendez}@uabc.edu.mx
+ *    Universidad Autonoma de Baja California
+ *    http://www.uabc.mx
+ */
+
 package botones;
 
-import botones.Button;
-import javafx.event.Event;
 import javafx.event.EventHandler;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TouchEvent;
-import javafx.scene.shape.Circle;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.Shape;
-
-import java.io.File;
-
 
 public class DPad extends Button {
 
     private final String path = "resources/";
-    private Image img;
     private double xTouchPoint;
     private double yTouchPoint;
 
@@ -79,32 +76,3 @@ public class DPad extends Button {
         });
     }
 }
-
-
-/*
-presionas boton
-
-metodo {
-dashing = true;
-dx = 2
-animation timer
-    if( i < 4)
-        move
-    else
-        stop
-        dashing = false;
-
-    i++
-}
-
-
-4 * 2^-(2t)
-
-hace que avance 4 en t = 0 y si pones una condicion de parada en t = 1
-entonces va de 4 a 2 en 1 segundo, avanzando por en medio con esa propulsion.
-
-
-en el dpad no lo dejas mover si dashing = true
-
-
- */

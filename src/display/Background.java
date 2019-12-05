@@ -1,10 +1,19 @@
+/*
+ *    Proyecto Pro-Planeta
+ *    Videojuego en Java construido con JavaFX
+ *    Autores: Vera Arias Victor Manuel, Feng Haosheng, Melendez Lineros Leonardo
+ *    Correo electronico: {victor.vera, feng.haosheng, leonardo.melendez}@uabc.edu.mx
+ *    Universidad Autonoma de Baja California
+ *    http://www.uabc.mx
+ */
+
 package display;
+
+import resourceLoaders.ImageLoader;
 
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
-import resourceLoaders.ImageLoader;
-
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
@@ -84,8 +93,6 @@ public class Background {
 
     public void paintBackground(GraphicsContext gc){
         gc.drawImage(GAME_BG[currentMap], bgX,0, GAME_BG[currentMap].getWidth(), GAME_BG[currentMap].getHeight());
-        //gc.drawImage(GAME_BG, bgX+1024, 0, 1024, 600);
-
     }
 
     public void reset(){

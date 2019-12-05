@@ -1,7 +1,15 @@
+/*
+ *    Proyecto Pro-Planeta
+ *    Videojuego en Java construido con JavaFX
+ *    Autores: Vera Arias Victor Manuel, Feng Haosheng, Melendez Lineros Leonardo
+ *    Correo electronico: {victor.vera, feng.haosheng, leonardo.melendez}@uabc.edu.mx
+ *    Universidad Autonoma de Baja California
+ *    http://www.uabc.mx
+ */
+
 package gameObjeto.boteBasura;
 
 import entidades.MovingIsoEntity;
-import sample.Main;
 
 public abstract class BoteBasura extends MovingIsoEntity {
 
@@ -15,37 +23,6 @@ public abstract class BoteBasura extends MovingIsoEntity {
 
     @Override
     public void move() {
-        //setX( getX() + Camion.SPEED);
-        //setHitboxX(getHitboxX() + Camion.SPEED);
-        /*
-        if(Main.getCamion().getGasolina()>0)
-        {
-            if(Main.getJugador().getX()+Main.getJugador().getWidth()>600&&Main.getDx()>0)
-            {
-                setX(getX() -0.2);
-                setHitboxX(getHitboxX() - 0.2);
 
-            }
-            else if(Main.getDx()>0)
-            {
-                setX(getX() -0.08);
-                setHitboxX(getHitboxX() - 0.08);
-
-            }
-            else if(Main.getDx()<0)
-            {
-                setX(getX() + 0.32);
-                setHitboxX(getHitboxX() + 0.32);
-
-            }
-            else
-            {
-                setX(getX() + 0.16);
-                setHitboxX(getHitboxX() + 0.16);
-
-            }
-        }
-
-         */
     }
 }

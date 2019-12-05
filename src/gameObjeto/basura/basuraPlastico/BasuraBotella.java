@@ -1,6 +1,13 @@
-package gameObjeto.basura.basuraPlastico;
+/*
+ *    Proyecto Pro-Planeta
+ *    Videojuego en Java construido con JavaFX
+ *    Autores: Vera Arias Victor Manuel, Feng Haosheng, Melendez Lineros Leonardo
+ *    Correo electronico: {victor.vera, feng.haosheng, leonardo.melendez}@uabc.edu.mx
+ *    Universidad Autonoma de Baja California
+ *    http://www.uabc.mx
+ */
 
-import gameObjeto.basura.Basura;
+package gameObjeto.basura.basuraPlastico;
 
 public class BasuraBotella extends BasuraPlastico {
     public BasuraBotella(double x, double y, double width, double height, double hitboxSize) {

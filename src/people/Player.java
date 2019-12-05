@@ -1,19 +1,26 @@
+/*
+ *    Proyecto Pro-Planeta
+ *    Videojuego en Java construido con JavaFX
+ *    Autores: Vera Arias Victor Manuel, Feng Haosheng, Melendez Lineros Leonardo
+ *    Correo electronico: {victor.vera, feng.haosheng, leonardo.melendez}@uabc.edu.mx
+ *    Universidad Autonoma de Baja California
+ *    http://www.uabc.mx
+ */
+
 package people;
 
 import entidades.MovingIsoEntity;
 import enums.Direccion;
 import gameObjeto.basura.Basura;
-import sample.Main;
 
 public class Player extends MovingIsoEntity {
     private static int vida=3;
-    public Direccion direccion;
+    private Direccion direccion;
     private boolean colisionado;
     private boolean cargandoBasura;
     private Basura basura;
 
     private boolean dashing;
-
     public static final double SPEED = 4;
 
     public Player( double x, double y, double width, double height, double hitboxSize) {
@@ -56,9 +63,7 @@ public class Player extends MovingIsoEntity {
     }
 
     @Override
-    public void move() {
-            //Movimiento
-
+    public void move() {    //Movimiento
             setX(getX() + getDx());
             setY(getY() + getDy());
             setHitboxX(getHitboxX() + getDx());
