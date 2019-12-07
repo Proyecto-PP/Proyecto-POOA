@@ -338,7 +338,7 @@ public class Main extends Application {
 
             Collections.sort(arrayEntidad, cmpArrayEntidad);    //Instancie el comparador en el initializeUtilities para que no se cree uno nuevo cada vez.
 
-            texto.setText("EL puntaje es:"+resultado.getPuntaje()+"      High Puntaje:"+resultadoScore.getPuntaje()+"        Gasolina:"+String.format("%.1f",camion.getGasolina()));
+            texto.setText("EL puntaje es:"+resultado.getPuntaje()+"      Puntaje maximo:"+resultadoScore.getPuntaje()+"        Gasolina:"+String.format("%.1f",camion.getGasolina()));
 
             updatePlayerMovement();
             collisionDetection();
@@ -920,25 +920,25 @@ public class Main extends Application {
         textoPuntaje=new Text();
         textoName.setX(250);
         textoName.setY(350);
-        textoName.setFont(Font.font("Verdana",30));
+        textoName.setFont(Font.font("Verdana",20));
         textoPuntaje.setX(550);
         textoPuntaje.setY(350);
-        textoPuntaje.setFont(Font.font("Verdana",30));
+        textoPuntaje.setFont(Font.font("Verdana",20));
         textoNameScore.setX(250);
         textoNameScore.setY(250);
-        textoNameScore.setFont(Font.font("Verdana",30));
+        textoNameScore.setFont(Font.font("Verdana",20));
         textoPuntajeScore.setX(550);
         textoPuntajeScore.setY(250);
-        textoPuntajeScore.setFont(Font.font("Verdana",30));
+        textoPuntajeScore.setFont(Font.font("Verdana",20));
     }
 
     private void pintarResultado(GraphicsContext gc){
         bg.paintBackground(gc);
         gc.drawImage(ImageLoader.spriteScore,200,150,633,300);
-        textoPuntajeScore.setText("High Socre:"+resultadoScore.getPuntaje());
+        textoPuntajeScore.setText("Puntaje maximo:"+resultadoScore.getPuntaje());
         textoPuntaje.setText("Puntaje:"+resultado.getPuntaje());
         textoName.setText("Nombre:"+resultado.getName());
-        textoNameScore.setText("Name Score:"+resultadoScore.getName());
+        textoNameScore.setText("Nombre:"+resultadoScore.getName());
     }
 
     public static Player getJugador() {
