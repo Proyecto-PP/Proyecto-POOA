@@ -1,12 +1,11 @@
 /*
- *    Proyecto Pro-Planeta
- *    Videojuego en Java construido con JavaFX
- *    Autores: Vera Arias Victor Manuel, Feng Haosheng, Melendez Lineros Leonardo
- *    Correo electronico: {victor.vera, feng.haosheng, leonardo.melendez}@uabc.edu.mx
- *    Universidad Autonoma de Baja California
+ *    Proyecto Pro-Planeta 1.0
+ *    Videojuego en Java construido con JavaFX 11
+ *    Autores: Castañón Puga Manuel, Vera Arias Victor Manuel, Feng Haosheng, Meléndez Lineros Leonardo
+ *    Correo electrónico: {puga, victor.vera, feng.haosheng, leonardo.melendez}@uabc.edu.mx
+ *    Universidad Autonóma de Baja California
  *    http://www.uabc.mx
  */
-
 package gameObjeto.basura.basuraPapel;
 
 public class BasuraBolaPapel extends BasuraPapel{
