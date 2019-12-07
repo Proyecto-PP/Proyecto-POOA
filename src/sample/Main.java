@@ -676,12 +676,16 @@ public class Main extends Application {
 
             if(camion.getGasolina()<0)
             {
+                bg.setCurrentMap(1);
+                camion.setDistance(0);
+                bg.reset();
                 setStateGame(StateGame.gameOver);
             }
 
         }
         if(stateGame==StateGame.gameOver)
         {
+            bg.setCurrentMap(1);
             System.out.println(resultado.getName());
             capturaNombreUsuario();
             setStateGame(StateGame.resultado);
@@ -765,7 +769,7 @@ public class Main extends Application {
                 bg.setCurrentMap(bg.getCurrentMap()+1); //Pasar al siguiente
             }
             else{           //Si esta en el ultimo mapa
-                camion.setGasolina(-1);
+                //camion.setGasolina(-1);
                 setStateGame(StateGame.gameOver);   //terminar el juego
                 updateGameState();
             }
